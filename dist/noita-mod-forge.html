@@ -1,0 +1,3200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noita Mod Forge</title>
+<style>
+:root {
+  --bg: #f4f1ea; --panel: #fbf9f4; --panel-2: #efebe1; --line: #d8d1c2; --text: #241f19; --muted: #6f665a;
+  --accent: #8a4fd6; --accent-2: #b8860b; --accent-soft: rgba(138, 79, 214, .14); --sel: rgba(138, 79, 214, .2);
+  --danger: #c0392b; --ok: #2e8b57; --mod: #d08a00; --input: #fff; --shadow: 0 8px 30px rgba(0, 0, 0, .18);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121016; --panel: #1b1820; --panel-2: #24202b; --line: #34303d; --text: #e9e4f0; --muted: #9a92a8;
+    --accent: #b07cff; --accent-2: #f0c060; --accent-soft: rgba(176, 124, 255, .16); --sel: rgba(176, 124, 255, .24);
+    --danger: #ff6b5b; --ok: #5fd08a; --mod: #f0b030; --input: #141218; --shadow: 0 8px 30px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121016; --panel: #1b1820; --panel-2: #24202b; --line: #34303d; --text: #e9e4f0; --muted: #9a92a8;
+  --accent: #b07cff; --accent-2: #f0c060; --accent-soft: rgba(176, 124, 255, .16); --sel: rgba(176, 124, 255, .24);
+  --danger: #ff6b5b; --ok: #5fd08a; --mod: #f0b030; --input: #141218; --shadow: 0 8px 30px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button.danger { color: var(--danger); }
+button.ghost { background: transparent; border-color: transparent; }
+button.small { padding: 2px 7px; font-size: 12px; }
+button:disabled { opacity: .45; cursor: default; }
+input, select, textarea { background: var(--input); border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; min-width: 0; }
+input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
+input[type=checkbox] { accent-color: var(--accent); }
+textarea { width: 100%; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+kbd { background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 11px; }
+
+.topbar { height: 48px; display: flex; align-items: center; gap: 16px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.brand { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.brand-mark { color: var(--accent-2); }
+.modname { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.modname input { width: 220px; color: var(--text); font-weight: 600; }
+.top-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.menu { position: relative; }
+.menu-pop { position: absolute; right: 0; top: 34px; z-index: 50; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
+.menu-pop button, .ctxmenu button { background: none; border: none; text-align: left; padding: 6px 10px; border-radius: 5px; }
+.menu-pop button:hover, .ctxmenu button:hover { background: var(--accent-soft); }
+.menu-pop hr, .ctxmenu hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+
+.layout { display: grid; grid-template-columns: 190px minmax(0, 1fr) 340px; height: calc(100% - 48px - 26px); }
+.sidenav { border-right: 1px solid var(--line); background: var(--panel); padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 7px; cursor: pointer; user-select: none; border: 1px dashed transparent; }
+.nav-item:hover { background: var(--panel-2); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav-item.drop-ok { border-color: var(--accent); background: var(--accent-soft); }
+.nav-item .badge { margin-left: auto; background: var(--mod); color: #000; border-radius: 9px; padding: 0 6px; font-size: 11px; font-weight: 700; }
+.nav-item .ico { width: 18px; text-align: center; }
+.nav-sep { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 12px 10px 4px; }
+.nav-hint { margin-top: auto; font-size: 11px; color: var(--muted); padding: 10px; }
+
+main { overflow: hidden; display: flex; flex-direction: column; min-width: 0; outline: none; }
+.view-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.view-head h2 { margin: 0 8px 0 0; font-size: 16px; }
+.view-head .search { width: 220px; }
+.view-head .spacer { flex: 1; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); border-radius: 12px; padding: 2px 9px; cursor: pointer; font-size: 12px; user-select: none; background: var(--panel); display: inline-flex; align-items: center; gap: 5px; }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+.bulkbar { display: flex; gap: 6px; align-items: center; padding: 0 14px; height: 38px; flex: none; background: var(--accent-soft); border-bottom: 1px solid var(--line); flex-wrap: nowrap; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+.bulkbar.idle { background: var(--panel); font-size: 12px; }
+.bulkbar button { min-height: 24px; }
+.bulkbar .count { font-weight: 600; margin-right: 6px; }
+.view-body { flex: 1; overflow: auto; position: relative; }
+.pad { padding: 14px; }
+
+table.grid { border-collapse: separate; border-spacing: 0; width: 100%; user-select: none; }
+.grid th { position: sticky; top: 0; z-index: 2; background: var(--panel-2); text-align: left; font-weight: 600; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); cursor: pointer; white-space: nowrap; }
+.grid th.num, .grid td.num { text-align: right; }
+.grid th .arrow { color: var(--accent); }
+.grid td { padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+.grid tr:hover td { background: var(--panel-2); }
+.grid tr.sel td { background: var(--sel); }
+.grid tr.cursor td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.grid td.edited { color: var(--mod); font-weight: 600; }
+.grid td.dim { color: var(--muted); }
+.grid td.editable { cursor: cell; }
+.grid td input.cell-edit { width: 100%; padding: 1px 4px; text-align: right; }
+.grid .typetag { display: inline-flex; align-items: center; gap: 5px; }
+.grid .typetag i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.grid .moddot { color: var(--mod); font-weight: 800; }
+.grid .off { text-decoration: line-through; opacity: .6; }
+.spark { display: inline-flex; gap: 1px; align-items: flex-end; height: 14px; vertical-align: middle; }
+.spark b { width: 4px; background: var(--accent); border-radius: 1px 1px 0 0; display: inline-block; }
+.spark b.z { background: var(--line); height: 2px !important; }
+.marquee { position: fixed; border: 1px solid var(--accent); background: var(--accent-soft); pointer-events: none; z-index: 40; }
+
+.inspector { border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding: 12px 14px 40px; }
+.inspector h3 { margin: 0 0 2px; font-size: 15px; }
+.inspector .sub { color: var(--muted); font-size: 12px; margin-bottom: 10px; word-break: break-all; }
+.inspector .empty { color: var(--muted); padding: 30px 6px; text-align: center; }
+.group-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px; display: flex; align-items: center; gap: 6px; }
+.group-title::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.field { display: grid; grid-template-columns: 1fr 120px 22px; align-items: center; gap: 6px; margin-bottom: 5px; }
+.field label { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field label.scrub { cursor: ew-resize; }
+.field label.scrub:hover { color: var(--accent); }
+.field.mod label { color: var(--mod); font-weight: 600; }
+.field input, .field select { width: 100%; }
+.field .reset { padding: 0; width: 22px; height: 22px; border: none; background: none; color: var(--muted); visibility: hidden; }
+.field.mod .reset { visibility: visible; }
+.field .reset:hover { color: var(--danger); }
+.field .hint { grid-column: 1 / -1; font-size: 11px; color: var(--muted); margin-top: -3px; }
+.field.wide { grid-template-columns: 1fr; }
+.tierbox { display: grid; grid-template-columns: repeat(11, 1fr); gap: 3px; }
+.tier { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.tier .bar { height: 34px; background: var(--panel-2); border-radius: 3px; position: relative; overflow: hidden; cursor: ns-resize; }
+.tier .bar span { position: absolute; bottom: 0; left: 0; right: 0; background: var(--accent); opacity: .75; }
+.tier .bar.mixed span { background: repeating-linear-gradient(45deg, var(--accent), var(--accent) 3px, transparent 3px, transparent 6px); }
+.tier input { padding: 1px 2px; font-size: 11px; text-align: center; }
+.tier small { text-align: center; color: var(--muted); font-size: 10px; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mt { margin-top: 10px; }
+.muted { color: var(--muted); }
+.note { font-size: 12px; color: var(--muted); background: var(--panel-2); border-radius: 6px; padding: 8px 10px; margin: 8px 0; }
+.note.warn { border-left: 3px solid var(--mod); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 12px; }
+.card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.card-head { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.card-head input.title { font-weight: 600; flex: 1; }
+.statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+.statgrid label { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.statgrid input { width: 74px; text-align: right; }
+.strip { display: flex; flex-wrap: wrap; gap: 4px; min-height: 38px; padding: 5px; border: 1px dashed var(--line); border-radius: 7px; background: var(--panel-2); margin-top: 4px; align-content: flex-start; }
+.strip.drop-ok { border-color: var(--accent); background: var(--accent-soft); }
+.strip .placeholder { color: var(--muted); font-size: 12px; padding: 4px; }
+.slot { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: var(--panel); border-radius: 5px; padding: 2px 6px; font-size: 12px; cursor: grab; user-select: none; }
+.slot i { width: 8px; height: 8px; border-radius: 2px; }
+.slot.sel { border-color: var(--accent); background: var(--accent-soft); }
+.slot .x { color: var(--muted); cursor: pointer; padding-left: 2px; }
+.slot .x:hover { color: var(--danger); }
+.insert-mark { width: 3px; align-self: stretch; background: var(--accent); border-radius: 2px; }
+.palette { display: flex; flex-direction: column; gap: 6px; }
+.palette .list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 60vh; overflow: auto; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 14px; }
+.tierTabs { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+table.rules { border-collapse: collapse; width: 100%; }
+.rules th, .rules td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.rules input { width: 80px; }
+.form { max-width: 620px; }
+.form .field { grid-template-columns: 1fr 160px 22px; }
+
+.statusbar { height: 26px; border-top: 1px solid var(--line); background: var(--panel); display: flex; align-items: center; gap: 16px; padding: 0 12px; font-size: 12px; color: var(--muted); }
+.statusbar b { color: var(--text); }
+.toasts { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; z-index: 100; align-items: center; }
+.toast { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 7px; padding: 8px 14px; box-shadow: var(--shadow); animation: pop .15s ease-out; display: flex; gap: 10px; align-items: center; }
+.toast.err { border-left-color: var(--danger); }
+@keyframes pop { from { transform: translateY(6px); opacity: 0; } }
+.ctxmenu { position: fixed; z-index: 90; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 4px; min-width: 210px; display: flex; flex-direction: column; }
+.ctxmenu .k { float: right; color: var(--muted); font-size: 11px; margin-left: 18px; }
+.modal { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); max-width: 640px; width: 100%; max-height: 86vh; overflow: auto; padding: 18px 20px; }
+.modal-card h2 { margin-top: 0; }
+.modal-card .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.shortcuts td { padding: 3px 10px 3px 0; }
+.dropveil { position: fixed; inset: 0; z-index: 85; background: var(--accent-soft); border: 3px dashed var(--accent); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; pointer-events: none; }
+.dropveil div { background: var(--panel); padding: 16px 24px; border-radius: 10px; box-shadow: var(--shadow); }
+.filetree { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; height: 100%; }
+.filetree .files { border: 1px solid var(--line); border-radius: 8px; overflow: auto; }
+.filetree .files div { padding: 5px 10px; cursor: pointer; font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; }
+.filetree .files div.on { background: var(--accent-soft); color: var(--accent); }
+.filetree pre { margin: 0; border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow: auto; background: var(--input); font-size: 12px; }
+.spritebox { display: flex; gap: 8px; align-items: center; }
+.spritebox img { width: 32px; height: 32px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-2); }
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 160px minmax(0, 1fr) 290px; }
+  .split { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  body { overflow: auto; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 8px 16px; gap: 8px; }
+  .modname input { width: 140px; }
+  .layout { display: flex; flex-direction: column; height: auto; }
+  .sidenav { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 6px 16px; }
+  .nav-sep, .nav-hint { display: none; }
+  .nav-item { white-space: nowrap; }
+  main { min-height: 60vh; }
+  .view-body { max-height: 70vh; }
+  .inspector { border-left: none; border-top: 1px solid var(--line); padding: 12px 16px 40px; }
+  .filetree { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: 1fr; }
+  .view-head .search { width: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">✦</span> Noita Mod Forge</div>
+  <label class="modname">Mod <input id="mod-name" placeholder="My mod" spellcheck="false"></label>
+  <div class="top-actions">
+    <button id="btn-undo" title="Undo (Ctrl+Z)">↶</button>
+    <button id="btn-redo" title="Redo (Ctrl+Shift+Z / Ctrl+Y)">↷</button>
+    <div class="menu">
+      <button id="btn-project">Project ▾</button>
+      <div class="menu-pop" id="project-menu" hidden>
+        <button data-act="new">New project</button>
+        <button data-act="open">Open project (.json)…</button>
+        <button data-act="save">Save project (.json)</button>
+        <hr>
+        <button data-act="import">Import game data…</button>
+        <button data-act="reset-catalog">Use built-in reference data</button>
+        <hr>
+        <button data-act="help">Keyboard shortcuts</button>
+      </div>
+    </div>
+    <button id="btn-export" class="primary" title="Download mod (Ctrl+S)">⬇ Export mod</button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="sidenav" id="nav"></nav>
+  <main id="main" tabindex="-1"></main>
+  <aside id="inspector" class="inspector"></aside>
+</div>
+<div id="statusbar" class="statusbar"></div>
+<div id="toasts" class="toasts"></div>
+<div id="ctxmenu" class="ctxmenu" hidden></div>
+<div id="modal" class="modal" hidden><div class="modal-card" id="modal-card"></div></div>
+<div id="dropveil" class="dropveil" hidden><div>Drop game data folder / files, a project .json, or images</div></div>
+<input type="file" id="file-open" accept=".json,application/json" hidden>
+<input type="file" id="file-import" multiple hidden>
+<input type="file" id="dir-import" webkitdirectory directory multiple hidden>
+<input type="file" id="file-sprite" accept="image/png" hidden>
+<script>
+"use strict";
+const __m = {};
+__m.data = (() => {
+// Built-in reference catalog.
+// These values are an approximate starting point so the editor is usable out of the box.
+// Import your extracted game data (Import → data folder) to get exact vanilla values.
+// Edits never depend on these numbers being exact: the generated mod only writes the
+// values you change.
+
+const SPELL_TYPES = [
+  { code: 0, key: 'ACTION_TYPE_PROJECTILE', label: 'Projectile', color: '#e0605a' },
+  { code: 1, key: 'ACTION_TYPE_STATIC_PROJECTILE', label: 'Static projectile', color: '#e09a4a' },
+  { code: 2, key: 'ACTION_TYPE_MODIFIER', label: 'Modifier', color: '#5a8de0' },
+  { code: 3, key: 'ACTION_TYPE_DRAW_MANY', label: 'Multicast', color: '#e0d24a' },
+  { code: 4, key: 'ACTION_TYPE_MATERIAL', label: 'Material', color: '#5ac07a' },
+  { code: 5, key: 'ACTION_TYPE_OTHER', label: 'Other', color: '#a070d0' },
+  { code: 6, key: 'ACTION_TYPE_UTILITY', label: 'Utility', color: '#d070b0' },
+  { code: 7, key: 'ACTION_TYPE_PASSIVE', label: 'Passive', color: '#70c0c0' },
+];
+const typeByCode = (c) => SPELL_TYPES.find((t) => t.code === c) || SPELL_TYPES[5];
+const typeByKey = (k) => SPELL_TYPES.find((t) => t.key === k);
+
+const MAX_TIER = 10;
+
+const P = 'data/entities/projectiles/deck/';
+// [id, name, type, mana, max_uses, fire_rate_wait, reload_delta, spread, levels, probs, price, projectile]
+const RAW_SPELLS = [
+  ['BOMB', 'Bomb', 0, 25, 3, 100, 0, 0, '0,1,2,3,4,5,6', '1,1,1,1,1,1,1', 200, P + 'bomb.xml'],
+  ['LIGHT_BULLET', 'Spark bolt', 0, 5, -1, 3, 0, -1, '0,1,2', '2,1,0.5', 100, P + 'light_bullet.xml'],
+  ['LIGHT_BULLET_TRIGGER', 'Spark bolt with trigger', 0, 10, -1, 3, 0, -1, '0,1,2,3', '1,0.5,0.5,0.5', 140, P + 'light_bullet.xml'],
+  ['LIGHT_BULLET_TRIGGER_2', 'Spark bolt with double trigger', 0, 15, -1, 4, 0, -1, '2,3,5,6,10', '1,0.5,0.5,1,0.1', 250, P + 'light_bullet_blue.xml'],
+  ['LIGHT_BULLET_TIMER', 'Spark bolt with timer', 0, 10, -1, 3, 0, -1, '1,2,3', '1,0.5,0.5', 140, P + 'light_bullet.xml'],
+  ['BULLET', 'Magic arrow', 0, 20, -1, 4, 0, 2, '1,2,3,4,5', '1,1,1,1,1', 150, P + 'bullet.xml'],
+  ['BULLET_TRIGGER', 'Magic arrow with trigger', 0, 35, -1, 4, 0, 2, '1,2,3,4,5', '0.5,0.5,0.5,0.5,0.5', 190, P + 'bullet.xml'],
+  ['HEAVY_BULLET', 'Magic bolt', 0, 30, -1, 7, 0, 5, '2,3,4,5,6', '1,1,1,1,1', 200, P + 'bullet_heavy.xml'],
+  ['HEAVY_BULLET_TRIGGER', 'Magic bolt with trigger', 0, 40, -1, 7, 0, 5, '2,3,4,5,6', '0.5,0.5,0.5,0.5,1', 240, P + 'bullet_heavy.xml'],
+  ['SLOW_BULLET', 'Energy orb', 0, 30, -1, 6, 0, 3.6, '1,2,3,4', '1,1,1,1', 160, P + 'bullet_slow.xml'],
+  ['SLOW_BULLET_TRIGGER', 'Energy orb with a trigger', 0, 50, -1, 25, 0, 10, '1,2,3,4,5,10', '0.5,0.5,0.5,0.5,1,0.1', 200, P + 'bullet_slow.xml'],
+  ['BLACK_HOLE', 'Black hole', 0, 180, 3, 80, 0, 0, '0,2,4,5', '0.8,0.8,0.8,0.8', 200, P + 'black_hole.xml'],
+  ['BLACK_HOLE_DEATH_TRIGGER', 'Black hole with death trigger', 0, 200, 3, 90, 0, 0, '2,4,5,6,10', '0.8,0.8,0.8,0.8,0.2', 220, P + 'black_hole.xml'],
+  ['WHITE_HOLE', 'White hole', 0, 180, 3, 80, 0, 0, '1,2,3,4,5,6', '0.1,0.1,0.1,0.1,0.1,0.1', 200, P + 'white_hole.xml'],
+  ['TENTACLE_PORTAL', 'Eldritch portal', 0, 140, 5, 20, 0, 0, '1,2,3,4,5,6,10', '0.2,0.2,0.2,0.2,0.2,0.2,0.2', 220, P + 'tentacle_portal.xml'],
+  ['SPITTER', 'Spitter bolt', 0, 5, -1, -1, 0, 6, '0,1,2,3', '1,1,1,0.5', 110, P + 'spitter.xml'],
+  ['SPITTER_TIMER', 'Spitter bolt with timer', 0, 10, -1, -1, 0, 6, '0,1,2,3', '0.5,0.5,0.5,0.5', 140, P + 'spitter.xml'],
+  ['SPITTER_TIER_2', 'Large spitter bolt', 0, 25, -1, 0, 0, 6, '2,3,4,5', '1,1,1,0.5', 190, P + 'spitter_tier_2.xml'],
+  ['SPITTER_TIER_3', 'Giant spitter bolt', 0, 40, -1, 4, 0, 8, '3,4,5,6', '0.8,0.8,1,1', 240, P + 'spitter_tier_3.xml'],
+  ['BUBBLESHOT', 'Bubble spark', 0, 5, -1, -5, 0, 22, '0,1,2,3', '1,1,1,0.5', 100, P + 'bubbleshot.xml'],
+  ['BUBBLESHOT_TRIGGER', 'Bubble spark with trigger', 0, 16, -1, 3, 0, 22, '0,1,2,3', '0.5,0.5,0.5,0.5', 120, P + 'bubbleshot.xml'],
+  ['DISC_BULLET', 'Disc projectile', 0, 20, -1, 10, 0, 2, '0,2,4', '1,1,1', 120, P + 'disc_bullet.xml'],
+  ['DISC_BULLET_BIG', 'Giga disc projectile', 0, 38, -1, 20, 0, 3.4, '0,2,4', '0.6,0.6,0.6', 180, P + 'disc_bullet_big.xml'],
+  ['DISC_BULLET_BIGGER', 'Omega disc projectile', 0, 80, -1, 50, 0, 6.4, '0,2,4,10', '0.1,0.1,0.1,0.2', 270, P + 'disc_bullet_bigger.xml'],
+  ['BOUNCY_ORB', 'Energy sphere', 0, 20, -1, 15, 0, 0, '1,2,3,4,5', '1,1,1,1,1', 140, P + 'bouncy_orb.xml'],
+  ['RUBBER_BALL', 'Bouncing burst', 0, 5, -1, -2, 0, -1, '0,1,6', '1,1,1', 60, P + 'rubber_ball.xml'],
+  ['ARROW', 'Arrow', 0, 15, -1, 10, 0, 20, '1,2,3,4,5', '1,1,1,1,1', 140, P + 'arrow.xml'],
+  ['POLLEN', 'Pollen', 0, 10, -1, 2, 0, 20, '0,2,3,4', '0.6,1,1,0.6', 110, P + 'pollen.xml'],
+  ['LANCE', 'Glowing lance', 0, 30, -1, 20, 0, -20, '1,2,5,6', '1,0.6,0.4,1', 180, P + 'lance.xml'],
+  ['ROCKET', 'Magic missile', 0, 70, 10, 30, 0, 3, '1,2,3,4,5', '1,1,1,0.5,0.5', 220, P + 'rocket.xml'],
+  ['ROCKET_TIER_2', 'Large magic missile', 0, 90, 8, 45, 0, 3, '2,3,4,5,6', '1,1,1,1,1', 290, P + 'rocket_tier_2.xml'],
+  ['ROCKET_TIER_3', 'Giant magic missile', 0, 120, 6, 60, 0, 3, '3,4,5,6', '1,1,1,1', 350, P + 'rocket_tier_3.xml'],
+  ['GRENADE', 'Firebolt', 0, 50, 25, 30, 0, 2.5, '1,2,3,4', '1,1,0.5,0.25', 170, P + 'grenade.xml'],
+  ['GRENADE_TRIGGER', 'Firebolt with trigger', 0, 50, 25, 30, 0, 2.5, '1,2,3,4,5,10', '0.5,0.5,0.5,0.5,1,0.2', 210, P + 'grenade.xml'],
+  ['GRENADE_TIER_2', 'Large firebolt', 0, 90, 20, 45, 0, 2.5, '2,3,5,6', '1,1,1,1', 220, P + 'grenade_tier_2.xml'],
+  ['GRENADE_TIER_3', 'Giant firebolt', 0, 90, 20, 45, 0, 2.5, '3,4,6', '0.8,1,1', 220, P + 'grenade_tier_3.xml'],
+  ['GRENADE_ANTI', 'Odd firebolt', 0, 50, 25, 30, 0, 2.5, '1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4', 170, P + 'grenade_anti.xml'],
+  ['GRENADE_LARGE', 'Dropper bolt', 0, 80, 35, 40, 0, 0, '1,2,3,4,5', '0.5,0.5,0.5,0.5,0.5', 150, P + 'grenade_large.xml'],
+  ['MINE', 'Unstable crystal', 0, 20, 15, 30, 0, 0, '1,3,4,6', '1,1,1,1', 200, P + 'mine.xml'],
+  ['MINE_DEATH_TRIGGER', 'Unstable crystal with trigger', 0, 30, 15, 30, 0, 0, '2,4,5,6', '1,1,1,1', 240, P + 'mine.xml'],
+  ['PIPE_BOMB', 'Dormant crystal', 0, 20, 20, 30, 0, 0, '2,3,4', '1,1,1', 200, P + 'pipe_bomb.xml'],
+  ['EXPLODING_DEER', 'Summon deercoy', 0, 120, 10, 80, 0, 0, '3,4,5', '0.6,0.6,0.6', 170, P + 'exploding_deer.xml'],
+  ['PEBBLE', 'Summon rock spirit', 0, 120, 10, 80, 0, 0, '1,2,4,6', '1,1,1,1', 200, P + 'pebble_player.xml'],
+  ['TNTBOX', 'Summon explosive box', 0, 40, 15, 30, 0, 0, '1,2,3,4,5', '1,0.5,0.5,0.5,0.5', 150, P + 'tntbox.xml'],
+  ['DYNAMITE', 'Dynamite', 0, 50, 16, 50, 0, 6, '0,1,2,3,4', '1,0.9,0.8,0.7,0.6', 160, P + 'tnt.xml'],
+  ['GLITTER_BOMB', 'Glitter bomb', 0, 70, 16, 0, 0, 12, '0,1,2,3,4', '0.8,0.8,0.8,0.8,0.8', 200, P + 'glitter_bomb.xml'],
+  ['BUCKSHOT', 'Triplicate bolt', 0, 25, -1, 8, 0, 14, '1,2,3,4', '1,1,1,1', 160, P + 'buckshot.xml'],
+  ['FREEZING_GAZE', 'Freezing gaze', 0, 45, 20, 20, 0, 0, '1,2,3,4', '0.65,0.65,0.65,0.65', 180, P + 'freezing_gaze_beam.xml'],
+  ['GLOWING_BOLT', 'Pinpoint of light', 0, 65, -1, 50, 0, 0, '2,3,4,5,6', '0.6,0.6,0.6,0.6,0.6', 220, P + 'glowing_bolt.xml'],
+  ['SPORE_POD', 'Spore pod', 0, 20, -1, 20, 0, 0, '1,2,3,4', '0.5,0.5,0.5,0.5', 200, P + 'spore_pod.xml'],
+  ['FISH', 'Summon fish', 0, 70, 10, 50, 0, 0, '1,2,3,4,5,6', '0.2,0.2,0.2,0.2,0.2,0.2', 200, P + 'fish.xml'],
+  ['FIREBALL', 'Fireball', 0, 70, 15, 50, 0, 4, '0,1,2,3,4,5,6', '1,1,1,1,1,1,1', 220, P + 'fireball.xml'],
+  ['METEOR', 'Meteor', 0, 150, 10, 45, 0, 0, '4,5,6,10', '0.6,0.6,0.6,0.5', 280, P + 'meteor.xml'],
+  ['FLAMETHROWER', 'Flamethrower', 0, 20, 60, 6, 0, 4, '0,1,2,3,4,5,6', '1,1,1,1,1,1,1', 220, P + 'flamethrower.xml'],
+  ['ICEBALL', 'Iceball', 0, 90, 15, 80, 0, 8, '1,2,3,4,5,6', '1,1,1,1,1,1', 260, P + 'iceball.xml'],
+  ['SLIMEBALL', 'Slimeball', 0, 20, -1, 10, 0, 4, '1,2,3,4,5', '1,1,1,1,1', 130, P + 'slime.xml'],
+  ['DARKFLAME', 'Path of dark flame', 0, 90, 60, 10, 0, 0, '3,4,5,6', '1,1,1,1', 180, P + 'darkflame.xml'],
+  ['MISSILE', 'Homing rocket', 0, 60, 20, 20, 0, 0, '2,3,4,5', '0.5,0.5,1,1', 200, P + 'missile.xml'],
+  ['FUNKY_SPELL', '???', 0, 5, -1, 4, 0, 0, '6,10', '0.1,0.1', 100, P + 'machinegun_bullet.xml'],
+  ['PEBBLE_X', 'Pebble', 0, 20, -1, 5, 0, 3, '0,1', '0,0', 100, ''],
+  ['EXPANDING_ORB', 'Expanding sphere', 0, 70, -1, 6, 0, 0, '3,4,5,6', '1,1,1,1', 200, P + 'orb_expanding.xml'],
+  ['CHAINSAW', 'Chainsaw', 0, 1, -1, 0, -10, 6, '0,2,4,6', '1,1,1,1', 80, P + 'chainsaw.xml'],
+  ['LUMINOUS_DRILL', 'Luminous drill', 0, 10, -1, -35, -10, 0, '1,2,4', '1,1,1', 150, P + 'luminous_drill.xml'],
+  ['LASER_LUMINOUS_DRILL', 'Luminous drill with timer', 0, 30, -1, -35, -10, 0, '1,2,4', '0.5,0.5,0.5', 220, P + 'luminous_drill.xml'],
+  ['TENTACLE', 'Tentacle', 0, 20, -1, 40, 0, 0, '3,4,5,6', '1,1,1,1', 200, P + 'tentacle.xml'],
+  ['TENTACLE_TIMER', 'Tentacle with timer', 0, 20, -1, 40, 0, 0, '3,4,5,6', '0.6,0.6,0.6,0.6', 250, P + 'tentacle.xml'],
+  ['HEAL_BULLET', 'Healing bolt', 0, 15, 20, 4, 0, 2, '2,3,4', '1,1,1', 60, P + 'heal_bullet.xml'],
+  ['SPIRAL_SHOT', 'Spiral shot', 0, 50, 15, 20, 0, 0, '4,5,6', '1,1,1', 190, P + 'spiral_shot.xml'],
+  ['MAGIC_SHIELD', 'Magic guard', 0, 40, 10, 20, 0, 0, '1,2,3,4', '1,1,1,1', 100, P + 'magic_shield_start.xml'],
+  ['BIG_MAGIC_SHIELD', 'Big magic guard', 0, 60, 10, 30, 0, 0, '2,3,4,5', '0.5,0.5,0.5,0.5', 120, P + 'big_magic_shield_start.xml'],
+  ['CHAIN_BOLT', 'Chain bolt', 0, 80, -1, 45, 0, 0, '0,1,2,3', '1,1,1,1', 240, P + 'chain_bolt.xml'],
+  ['FIREBALL_RAY', 'Flaming arc', 0, 150, 16, 0, 0, 0, '1,2,4,5', '0.6,0.4,0.4,0.6', 150, P + 'fireball_ray.xml'],
+  ['LIGHTNING', 'Lightning bolt', 0, 70, -1, 50, 0, 0, '1,2,5,6', '1,1,1,1', 250, P + 'lightning.xml'],
+  ['BALL_LIGHTNING', 'Ball lightning', 0, 70, -1, 50, 0, 0, '2,4,5,6', '1,1,1,1', 250, P + 'ball_lightning.xml'],
+  ['LASER', 'Concentrated light', 0, 30, -1, -22, 0, 0, '1,2,3,4,5', '1,1,1,1,1', 180, P + 'laser.xml'],
+  ['MEGALASER', 'Intense concentrated light', 0, 110, -1, 15, 0, 0, '2,3,4,5,6', '1,1,1,1,1', 300, P + 'megalaser_beam.xml'],
+  ['LIGHTNING_RAY', 'Lightning ray', 0, 150, 16, 0, 0, 0, '1,2,4,5', '0.6,0.4,0.4,0.6', 150, P + 'lightning_ray.xml'],
+  ['DIGGER', 'Digging bolt', 0, 0, -1, 1, 0, 3, '1,2', '1,0.5', 70, P + 'digger.xml'],
+  ['POWERDIGGER', 'Digging blast', 0, 0, -1, 1, 0, 3, '2,3,4', '0.5,0.5,0.5', 110, P + 'powerdigger.xml'],
+  ['NUKE', 'Nuke', 0, 200, 1, 20, 600, 0, '1,5,6,10', '0.3,1,1,0.2', 400, P + 'nuke.xml'],
+  ['NUKE_GIGA', 'Giga nuke', 0, 500, 1, 30, 800, 0, '5,6,10', '0.1,0.5,1', 800, P + 'nuke_giga.xml'],
+  ['FIREWORK', 'Fireworks!', 0, 70, 25, 60, 0, 0, '1,2,3,4,5,6', '1,1,1,1,1,1', 220, P + 'fireworks/firework_pink.xml'],
+  ['SUMMON_WANDGHOST', 'Summon wand ghost', 0, 300, 1, 0, 0, 0, '5,6,10', '0.08,0.1,0.1', 400, P + 'wand_ghost_player.xml'],
+  ['TOUCH_GOLD', 'Touch of gold', 4, 300, 1, 15, 0, 0, '1,2,3,4,5,6,7,10', '0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1', 480, ''],
+  ['TOUCH_WATER', 'Touch of water', 4, 280, 5, 15, 0, 0, '1,2,3,4,5,6,7', '0.2,0.2,0.2,0.2,0.2,0.2,0.2', 420, ''],
+  ['DEATH_CROSS', 'Death cross', 1, 80, -1, 40, 0, 0, '1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4', 210, P + 'death_cross.xml'],
+  ['DEATH_CROSS_BIG', 'Giga death cross', 1, 150, 8, 70, 0, 0, '2,3,4,5,6,10', '0.3,0.3,0.3,0.3,0.3,0.1', 310, P + 'death_cross_big.xml'],
+  ['WALL_HORIZONTAL', 'Horizontal barrier', 1, 70, 5, 5, 0, 0, '0,1,2,4,5', '0.3,0.3,0.3,0.3,0.3', 160, P + 'wall_horizontal.xml'],
+  ['WALL_VERTICAL', 'Vertical barrier', 1, 70, 5, 5, 0, 0, '0,1,2,4,5', '0.3,0.3,0.3,0.3,0.3', 160, P + 'wall_vertical.xml'],
+  ['CIRCLE_FIRE', 'Circle of fervour', 1, 20, 15, 20, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 170, P + 'circle_fire.xml'],
+  ['CIRCLE_ACID', 'Circle of acid', 1, 20, 15, 20, 0, 0, '2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4', 180, P + 'circle_acid.xml'],
+  ['CIRCLE_OIL', 'Circle of oil', 1, 20, 15, 20, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 130, P + 'circle_oil.xml'],
+  ['CIRCLE_WATER', 'Circle of water', 1, 20, 15, 20, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 130, P + 'circle_water.xml'],
+  ['MATERIAL_WATER', 'Water', 4, 0, -1, -15, 0, 0, '0,1,2,3,4,5,6', '1,1,1,1,1,1,1', 110, P + 'material_water.xml'],
+  ['MATERIAL_OIL', 'Oil', 4, 0, -1, -15, 0, 0, '0,1,2,3,4,5,6', '1,1,1,1,1,1,1', 140, P + 'material_oil.xml'],
+  ['MATERIAL_BLOOD', 'Blood', 4, 0, 250, -15, 0, 0, '0,1,2,3,4,5,6', '0.5,0.5,0.5,0.5,0.5,0.5,0.5', 130, P + 'material_blood.xml'],
+  ['MATERIAL_ACID', 'Acid', 4, 0, 250, -15, 0, 0, '2,3,4,5,6', '0.5,0.5,0.5,0.5,0.5', 150, P + 'material_acid.xml'],
+  ['MATERIAL_CEMENT', 'Cement', 4, 0, 250, -15, 0, 0, '0,1,2,3,4,5,6', '0.5,0.5,0.5,0.5,0.5,0.5,0.5', 100, P + 'material_cement.xml'],
+  ['TELEPORT_PROJECTILE', 'Teleport bolt', 5, 40, -1, 3, 0, 2, '0,1,2,3,4,5,6', '0.6,0.6,0.6,0.4,0.4,0.4,1', 130, P + 'teleport_projectile.xml'],
+  ['TELEPORT_PROJECTILE_SHORT', 'Small teleport bolt', 5, 20, -1, 3, 0, 2, '0,1,2,3,4,5,6', '0.6,0.6,0.6,0.4,0.4,0.4,1', 130, P + 'teleport_projectile_short.xml'],
+  ['SWAPPER_PROJECTILE', 'Swapper', 5, 5, -1, 3, 0, 2, '0,1,2,3,4,5,6', '0.05,0.05,0.05,0.05,0.05,0.05,0.05', 100, P + 'swapper.xml'],
+  ['SUMMON_PORTAL', 'Summon portal', 5, 0, 1, 0, 0, 0, '10', '0', 300, ''],
+  // Modifiers
+  ['DAMAGE', 'Damage plus', 2, 5, -1, 5, 0, 0, '1,2,3,4,5', '0.6,0.6,0.6,0.6,0.6', 140, ''],
+  ['DAMAGE_RANDOM', 'Random damage', 2, 15, -1, 15, 0, 0, '2,3,4,5,6', '0.6,0.6,0.6,0.6,0.6', 200, ''],
+  ['BLOODLUST', 'Bloodlust', 2, 2, -1, 8, 0, 6, '2,3,4,5,6', '0.2,0.2,0.2,0.2,0.2', 160, ''],
+  ['DAMAGE_FOREVER', 'Mana to damage', 2, 0, -1, 15, 0, 0, '2,3,4,5,6', '0.2,0.2,0.2,0.2,0.2', 240, ''],
+  ['CRITICAL_HIT', 'Critical plus', 2, 5, -1, 5, 0, 0, '1,2,3,4,5', '0.6,0.6,0.6,0.6,0.6', 140, ''],
+  ['AREA_DAMAGE', 'Damage field', 2, 30, -1, 0, 0, 0, '1,2,3,4,5', '0.5,0.5,0.5,0.5,0.5', 140, ''],
+  ['SPELLS_TO_POWER', 'Spells to power', 2, 110, -1, 40, 0, 0, '1,2,3,4,5,6', '0.5,0.5,0.5,0.5,0.5,0.5', 140, ''],
+  ['ESSENCE_TO_POWER', 'Essence to power', 2, 110, -1, 20, 0, 0, '1,2,3,4,5,6', '0.3,0.3,0.3,0.3,0.3,0.3', 120, ''],
+  ['HEAVY_SHOT', 'Heavy shot', 2, 7, -1, 0, 0, 0, '2,3,4', '0.4,0.4,0.4', 150, ''],
+  ['LIGHT_SHOT', 'Light shot', 2, 5, -1, -3, 0, -6, '2,3,4', '0.4,0.4,0.4', 60, ''],
+  ['KNOCKBACK', 'Knockback', 2, 5, -1, 0, 0, 0, '3,5', '0.6,0.6', 100, ''],
+  ['RECOIL', 'Recoil', 2, 5, -1, 0, 0, 0, '2,4', '0.6,0.6', 100, ''],
+  ['RECOIL_DAMPER', 'Recoil damper', 2, 5, -1, 0, 0, 0, '3,6', '0.6,0.6', 100, ''],
+  ['SPEED', 'Speed up', 2, 3, -1, 0, 0, 0, '1,2,3', '1,0.5,0.5', 100, ''],
+  ['ACCELERATING_SHOT', 'Accelerating shot', 2, 20, -1, 8, 0, 0, '2,3,4,5,6', '0.5,0.5,1,1,1', 190, ''],
+  ['DECELERATING_SHOT', 'Decelerating shot', 2, 10, -1, -8, 0, 0, '1,3,4,5,6', '0.4,0.4,0.4,0.4,0.4', 80, ''],
+  ['EXPLOSIVE_PROJECTILE', 'Explosive projectile', 2, 30, -1, 15, 0, 0, '2,3,4', '1,1,1', 120, ''],
+  ['WATER_TO_POISON', 'Water to poison', 2, 30, -1, 0, 0, 0, '1,3,5', '0.5,0.5,0.5', 80, ''],
+  ['CLIPPING_SHOT', 'Piercing shot', 2, 160, -1, 0, 0, 0, '3,4,5,6', '0.6,0.6,0.6,0.6', 200, ''],
+  ['PIERCING_SHOT', 'Piercing shot', 2, 140, -1, 0, 0, 0, '2,3,4,5,6', '0.6,0.6,0.6,0.6,0.6', 190, ''],
+  ['HOMING', 'Homing', 2, 70, -1, 0, 0, 0, '1,2,3,4,5,6', '0.1,0.4,0.4,0.4,0.4,0.4', 220, ''],
+  ['HOMING_SHORT', 'Short-range homing', 2, 40, -1, 0, 0, 0, '2,3,4,5,6', '0.4,0.8,0.8,0.8,0.8', 160, ''],
+  ['HOMING_ROTATE', 'Rotate towards foes', 2, 40, -1, 0, 0, 0, '2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4', 175, ''],
+  ['HOMING_SHOOTER', 'Boomerang', 2, 10, -1, 0, 0, 0, '2,3,4,5,6', '0.2,0.2,0.2,0.2,0.2', 100, ''],
+  ['AUTOAIM', 'Auto-aim', 2, 25, -1, 0, 0, 0, '2,3,4,5', '0.3,0.3,0.3,0.3', 200, ''],
+  ['HOMING_CURSOR', 'Aiming arc', 2, 30, -1, 0, 0, 0, '2,3,4,5,6', '0.4,1,1,0.4,0.4', 175, ''],
+  ['PIERCING_SHOT_2', 'Piercing shot (alt)', 2, 140, -1, 0, 0, 0, '0', '0', 190, ''],
+  ['SPREAD_REDUCE', 'Reduce spread', 2, 1, -1, 0, 0, -60, '1,2,3,4,5,6', '0.8,0.8,0.8,0.8,0.8,0.8', 100, ''],
+  ['RECHARGE', 'Reduce recharge time', 2, 12, -1, -10, -20, 0, '1,2,3,4,5,6', '1,1,1,1,1,1', 200, ''],
+  ['MANA_REDUCE', 'Add mana', 2, -30, -1, 10, 0, 0, '1,2,3,4,5,6', '1,1,1,1,1,1', 250, ''],
+  ['LIFETIME', 'Increase lifetime', 2, 40, -1, 13, 0, 0, '3,4,5,6', '0.5,0.5,0.5,0.5', 250, ''],
+  ['LIFETIME_DOWN', 'Reduce lifetime', 2, 10, -1, -15, 0, 0, '3,4,5,6', '0.5,0.5,0.5,0.5', 90, ''],
+  ['BOUNCE', 'Bounce', 2, 0, -1, 0, 0, 0, '2,3,4,5,6', '1,1,0.4,0.2,0.2', 50, ''],
+  ['NOLLA', 'Nolla', 2, 1, -1, -15, 0, 0, '2,4,5,6', '0.1,0.1,0.1,0.5', 50, ''],
+  ['ELECTRIC_CHARGE', 'Electric charge', 2, 8, -1, 0, 0, 0, '1,2,3,4,5', '1,1,1,1,1', 150, ''],
+  ['FREEZE', 'Freeze charge', 2, 10, -1, 0, 0, 0, '1,3,4,5', '1,1,1,1', 140, ''],
+  ['FIRE_TRAIL', 'Fire trail', 2, 10, -1, 0, 0, 0, '1,2,3,4,5', '0.3,0.3,0.3,0.3,0.3', 130, ''],
+  ['BURN_TRAIL', 'Burning trail', 2, 5, -1, 0, 0, 0, '0,1,2,3', '0.3,0.3,0.3,0.3', 60, ''],
+  ['POISON_TRAIL', 'Poison trail', 2, 10, -1, 0, 0, 0, '1,2,3,4,5', '0.3,0.3,0.3,0.3,0.3', 160, ''],
+  ['OIL_TRAIL', 'Oil trail', 2, 10, -1, 0, 0, 0, '1,2,3,4,5', '0.3,0.3,0.3,0.3,0.3', 160, ''],
+  ['WATER_TRAIL', 'Water trail', 2, 10, -1, 0, 0, 0, '1,2,3,4,5', '0.3,0.3,0.3,0.3,0.3', 160, ''],
+  ['ZERO_DAMAGE', 'Null shot', 2, 5, -1, 0, 0, 0, '2,3,4,5,6', '0.1,0.1,0.1,0.1,0.1', 50, ''],
+  ['ADD_TRIGGER', 'Add trigger', 2, 10, -1, 0, 0, 0, '3,4,5,6,10', '0.3,0.6,0.6,0.6,0.1', 100, ''],
+  ['ADD_TIMER', 'Add timer', 2, 20, -1, 0, 0, 0, '3,4,5,6,10', '0.3,0.6,0.6,0.6,0.1', 150, ''],
+  ['ADD_DEATH_TRIGGER', 'Add expiration trigger', 2, 20, -1, 0, 0, 0, '3,4,5,6,10', '0.3,0.6,0.6,0.6,0.1', 150, ''],
+  ['LARPA_CHAOS', 'Chaos larpa', 2, 100, -1, 15, 0, 0, '2,3,4,6', '0.1,0.3,0.2,0.2', 260, ''],
+  ['LARPA_DOWNWARDS', 'Downwards larpa', 2, 120, -1, 15, 0, 0, '1,3,5,6', '0.1,0.2,0.1,0.1', 290, ''],
+  ['LARPA_UPWARDS', 'Upwards larpa', 2, 120, -1, 15, 0, 0, '1,2,4,6', '0.1,0.2,0.1,0.1', 290, ''],
+  ['LARPA_CHAOS_2', 'Copy trail', 2, 150, -1, 20, 0, 0, '3,5,6,10', '0.1,0.1,0.1,0.2', 260, ''],
+  ['LARPA_DEATH', 'Larpa explosion', 2, 90, -1, 15, 0, 0, '1,3,4,6,10', '0.1,0.1,0.1,0.1,0.1', 150, ''],
+  ['ORBIT_DISCS', 'Sawblade orbit', 2, 70, -1, 0, 0, 0, '2,3,4,5', '0.2,0.3,0.4,0.1', 200, ''],
+  ['ORBIT_FIREBALLS', 'Fireball orbit', 2, 40, -1, 0, 0, 0, '0,1,2,3', '0.2,0.3,0.4,0.1', 140, ''],
+  ['CHAOTIC_ARC', 'Chaotic path', 2, 0, -1, 0, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 50, ''],
+  ['PINGPONG_PATH', 'Ping-pong path', 2, 0, -1, 0, 0, 0, '1,3,5', '0.4,0.4,0.4', 20, ''],
+  ['SINEWAVE', 'Slithering path', 2, 0, -1, 0, 0, 0, '1,3,5', '0.4,0.4,0.4', 10, ''],
+  ['AVOIDING_ARC', 'Avoiding arc', 2, 0, -1, 0, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 30, ''],
+  ['FLOATING_ARC', 'Floating arc', 2, 0, -1, 0, 0, 0, '0,1,2,3,4,5,6', '0.4,0.4,0.4,0.4,0.4,0.4,0.4', 30, ''],
+  ['FLY_DOWNWARDS', 'Fly downwards', 2, 0, -1, 0, 0, 0, '1,3,5', '0.4,0.4,0.4', 20, ''],
+  ['FLY_UPWARDS', 'Fly upwards', 2, 0, -1, 0, 0, 0, '1,3,5', '0.4,0.4,0.4', 20, ''],
+  ['EXPLOSION_REMOVE', 'Remove explosion', 2, 0, -1, -15, 0, 0, '2,3,4,5', '0.3,0.3,0.3,0.3', 50, ''],
+  ['EXPLOSION_TINY', 'Concentrated explosion', 2, 40, -1, 15, 0, 0, '2,3,4,5', '0.3,0.3,0.3,0.3', 160, ''],
+  ['QUANTUM_SPLIT', 'Quantum split', 2, 10, -1, 5, 0, 0, '1,3,4,5,6', '0.5,0.5,0.5,0.5,0.5', 200, ''],
+  // Multicast / draw many
+  ['BURST_2', 'Double spell', 3, 0, -1, 0, 0, 0, '0,1,2,3,4,5,6', '1,1,1,0.8,0.8,0.8,0.8', 140, ''],
+  ['BURST_3', 'Triple spell', 3, 2, -1, 0, 0, 0, '1,2,3,4,5,6', '1,1,1,1,1,1', 160, ''],
+  ['BURST_4', 'Quadruple spell', 3, 5, -1, 0, 0, 0, '2,3,4,5,6', '0.8,0.8,0.8,0.8,0.8', 180, ''],
+  ['BURST_8', 'Octuple spell', 3, 30, -1, 0, 0, 0, '5,6,10', '0.1,0.1,0.5', 300, ''],
+  ['BURST_X', 'Myriad spell', 3, 50, 30, 0, 0, 0, '5,6,10', '0.1,0.1,1', 500, ''],
+  ['SCATTER_2', 'Double scatter spell', 3, 0, -1, -3, 0, 10, '0,1,2', '0.8,0.8,0.8', 100, ''],
+  ['SCATTER_3', 'Triple scatter spell', 3, 1, -1, -3, 0, 20, '0,1,2,3', '0.7,0.7,0.7,0.8', 120, ''],
+  ['SCATTER_4', 'Quadruple scatter spell', 3, 2, -1, -3, 0, 40, '1,2,3,4,5,6', '0.6,0.6,0.7,0.8,0.8,0.8', 140, ''],
+  ['I_SHAPE', 'Formation - behind your back', 3, 0, -1, 0, 0, 0, '1,2,3,4', '0.4,0.4,0.4,0.4', 80, ''],
+  ['Y_SHAPE', 'Formation - bifurcated', 3, 2, -1, 0, 0, 0, '0,1,2,3,4', '0.5,0.4,0.4,0.3,0.2', 100, ''],
+  ['T_SHAPE', 'Formation - above and below', 3, 3, -1, 0, 0, 0, '1,2,3,4,5', '0.4,0.4,0.4,0.3,0.2', 120, ''],
+  ['W_SHAPE', 'Formation - trifurcated', 3, 3, -1, 0, 0, 0, '2,3,4,5,6', '0.4,0.4,0.3,0.3,0.3', 160, ''],
+  ['CIRCLE_SHAPE', 'Formation - hexagon', 3, 6, -1, 0, 0, 0, '1,2,3,4,5,6', '0.1,0.2,0.3,0.3,0.3,0.3', 150, ''],
+  ['PENTAGRAM_SHAPE', 'Formation - pentagon', 3, 5, -1, 0, 0, 0, '1,2,3,4,5', '0.4,0.4,0.3,0.2,0.1', 100, ''],
+  // Utility / greek / divide
+  ['DIVIDE_2', 'Divide by 2', 5, 35, -1, 20, 0, 0, '2,3,5,6', '0.2,0.2,0.2,0.2', 200, ''],
+  ['DIVIDE_3', 'Divide by 3', 5, 50, -1, 35, 0, 0, '3,5,6', '0.1,0.1,0.1', 250, ''],
+  ['DIVIDE_4', 'Divide by 4', 5, 70, -1, 50, 0, 0, '4,5,6', '0.1,0.1,0.1', 400, ''],
+  ['DIVIDE_10', 'Divide by 10', 5, 200, 5, 80, 20, 0, '10', '1', 600, ''],
+  ['ALPHA', 'Alpha', 5, 30, -1, 15, 0, 0, '5,6,10', '0.1,0.1,1', 200, ''],
+  ['GAMMA', 'Gamma', 5, 30, -1, 15, 0, 0, '5,6,10', '0.1,0.1,1', 200, ''],
+  ['TAU', 'Tau', 5, 35, -1, 0, 0, 0, '5,6,10', '0.1,0.1,1', 200, ''],
+  ['OMEGA', 'Omega', 5, 300, -1, 0, 0, 0, '5,6,10', '0.1,0.1,1', 600, ''],
+  ['MU', 'Mu', 5, 120, -1, 50, 0, 0, '5,6,10', '0.1,0.1,1', 500, ''],
+  ['PHI', 'Phi', 5, 120, -1, 50, 0, 0, '5,6,10', '0.1,0.1,1', 500, ''],
+  ['SIGMA', 'Sigma', 5, 120, -1, 30, 0, 0, '5,6,10', '0.1,0.1,1', 500, ''],
+  ['ZETA', 'Zeta', 5, 10, -1, 50, 0, 0, '5,6,10', '0.1,0.1,1', 600, ''],
+  ['ADD_MANA', 'Add mana', 2, -30, -1, 10, 0, 0, '0', '0', 250, ''],
+  ['RESET', 'Wand refresh', 5, 20, -1, 0, -25, 0, '1,2,3,4,5,6', '0.2,0.2,0.2,0.2,0.2,0.2', 120, ''],
+  ['DUPLICATE', 'Spell duplication', 5, 250, -1, 20, 20, 0, '5,6,10', '0.1,0.1,1', 250, ''],
+  ['RANDOM_SPELL', 'Random spell', 5, 5, -1, 0, 0, 0, '3,4,5,6,10', '0.1,0.1,0.1,0.1,0.5', 100, ''],
+  ['RANDOM_PROJECTILE', 'Random projectile spell', 5, 20, -1, 0, 0, 0, '2,4,5,6,10', '0.1,0.1,0.1,0.1,0.5', 150, ''],
+  ['RANDOM_MODIFIER', 'Random modifier spell', 5, 20, -1, 0, 0, 0, '4,5,6,10', '0.1,0.1,0.1,0.5', 150, ''],
+  ['DRAW_RANDOM', 'Copy random spell', 5, 20, -1, 0, 0, 0, '2,3,5,6,10', '0.1,0.1,0.1,0.1,0.5', 150, ''],
+  ['IF_ENEMY', 'Requirement - enemies', 5, 0, -1, 0, 0, 0, '10', '0.2', 100, ''],
+  ['IF_HP', 'Requirement - low health', 5, 0, -1, 0, 0, 0, '10', '0.2', 100, ''],
+  ['IF_PROJECTILE', 'Requirement - projectile spells', 5, 0, -1, 0, 0, 0, '10', '0.2', 100, ''],
+  ['IF_ELSE', 'Requirement - otherwise', 5, 0, -1, 0, 0, 0, '10', '0.2', 100, ''],
+  ['IF_END', 'Requirement - endpoint', 5, 0, -1, 0, 0, 0, '10', '0.2', 100, ''],
+  // Passive
+  ['TORCH', 'Torch', 7, 0, -1, 0, 0, 0, '0,1,2', '1,1,1', 30, ''],
+  ['TORCH_ELECTRIC', 'Electric torch', 7, 0, -1, 0, 0, 0, '0,1,2', '1,1,1', 80, ''],
+  ['ENERGY_SHIELD', 'Energy shield', 7, 0, -1, 0, 0, 0, '1,2,3,4,5,6', '0.05,0.6,0.6,0.6,0.6,0.6', 220, ''],
+  ['ENERGY_SHIELD_SECTOR', 'Energy shield sector', 7, 0, -1, 0, 0, 0, '0,1,2,3,4,5', '0.05,0.6,0.6,0.6,0.6,0.6', 160, ''],
+  ['TINY_GHOST', 'Summon tiny ghost', 7, 0, -1, 0, 0, 0, '1,2,3,4,5,6', '0.1,0.5,1,1,1,1', 160, ''],
+];
+
+const BUILTIN_SPELLS = RAW_SPELLS
+  .filter((r) => !['PEBBLE_X', 'PIERCING_SHOT_2', 'ADD_MANA'].includes(r[0]))
+  .map((r) => ({
+    id: r[0], name: r[1], type: r[2], mana: r[3], max_uses: r[4],
+    fire_rate_wait: r[5], reload: r[6], spread: r[7],
+    spawn: parseSpawn(r[8], r[9]), price: r[10],
+    projectile: r[11] || null, proj: null, description: '', sprite: '',
+  }));
+
+function parseSpawn(levels, probs) {
+  const out = {};
+  const L = String(levels || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const Pr = String(probs || '').split(',').map((s) => s.trim());
+  L.forEach((l, i) => { const n = Number(l); if (!Number.isNaN(n)) out[n] = Number(Pr[i] ?? 0) || 0; });
+  return out;
+}
+
+const A = 'data/entities/animals/';
+// [file, name, biome hint]
+const RAW_ENEMIES = [
+  ['zombie_weak', 'Weak zombie', 'Mines'], ['zombie', 'Zombie', 'Mines'],
+  ['miner_weak', 'Weak miner', 'Mines'], ['miner', 'Miner', 'Mines'], ['miner_fire', 'Fire miner', 'Mines'],
+  ['shotgunner_weak', 'Weak shotgunner', 'Mines'], ['shotgunner', 'Shotgunner', 'Mines'],
+  ['slimeshooter_weak', 'Weak slime shooter', 'Mines'], ['slimeshooter', 'Slime shooter', 'Coal pits'],
+  ['acidshooter', 'Acid shooter', 'Coal pits'], ['firemage_weak', 'Weak fire mage', 'Mines'], ['firemage', 'Fire mage', 'Coal pits'],
+  ['fly', 'Fly', 'Mines'], ['bat', 'Bat', 'Mines'], ['bigbat', 'Big bat', 'Coal pits'], ['rat', 'Rat', 'Coal pits'],
+  ['frog', 'Frog', 'Coal pits'], ['frog_big', 'Big frog', 'Coal pits'], ['longleg', 'Longleg', 'Mines'],
+  ['firebug', 'Fire bug', 'Coal pits'], ['bigfirebug', 'Big fire bug', 'Coal pits'],
+  ['blob', 'Blob', 'Mines'], ['worm_tiny', 'Tiny worm', 'Mines'], ['worm', 'Worm', 'Snowy depths'], ['worm_big', 'Big worm', 'Hiisi base'], ['worm_end', 'Giant worm', 'Underground jungle'],
+  ['giant', 'Giant', 'Snowy depths'], ['iceskull', 'Ice skull', 'Snowy depths'], ['fireskull', 'Fire skull', 'Coal pits'],
+  ['thundermage', 'Thunder mage', 'Snowy depths'], ['thundermage_big', 'Big thunder mage', 'Vault'],
+  ['sniper', 'Sniper hiisi', 'Hiisi base'], ['scavenger_grenade', 'Hiisi grenadier', 'Hiisi base'], ['scavenger_smg', 'Hiisi gunner', 'Hiisi base'],
+  ['scavenger_heal', 'Hiisi healer', 'Hiisi base'], ['scavenger_leader', 'Hiisi leader', 'Hiisi base'], ['scavenger_mine', 'Hiisi mine layer', 'Hiisi base'],
+  ['scavenger_clusterbomb', 'Hiisi cluster bomber', 'Hiisi base'], ['scavenger_poison', 'Hiisi poisoner', 'Hiisi base'], ['scavenger_shield', 'Hiisi shield', 'Hiisi base'],
+  ['tank', 'Tank', 'Vault'], ['tank_rocket', 'Rocket tank', 'Vault'], ['tank_super', 'Super tank', 'Vault'],
+  ['roboguard', 'Robot guard', 'Vault'], ['spearbot', 'Spear bot', 'Vault'], ['healerdrone_physics', 'Healer drone', 'Vault'],
+  ['lasershooter', 'Laser shooter', 'Underground jungle'], ['spitmonster', 'Spit monster', 'Underground jungle'],
+  ['fungus', 'Fungus', 'Underground jungle'], ['fungus_big', 'Big fungus', 'Underground jungle'],
+  ['lukki', 'Lukki', 'Underground jungle'], ['lukki_tiny', 'Tiny lukki', 'Underground jungle'], ['lukki_longleg', 'Long-legged lukki', 'Underground jungle'],
+  ['ant', 'Ant', 'Underground jungle'], ['maggot', 'Maggot', 'Underground jungle'],
+  ['wizard_tele', 'Teleporting wizard', 'Temple of the art'], ['wizard_dark', 'Dark wizard', 'Temple of the art'], ['wizard_poly', 'Polymorph wizard', 'Temple of the art'],
+  ['wizard_swapper', 'Swapper wizard', 'Temple of the art'], ['wizard_neutral', 'Neutral wizard', 'Temple of the art'], ['wizard_twitchy', 'Twitchy wizard', 'Temple of the art'],
+  ['wizard_hearty', 'Hearty wizard', 'Temple of the art'], ['wizard_returner', 'Returner wizard', 'Temple of the art'], ['wizard_homing', 'Homing wizard', 'Temple of the art'],
+  ['necromancer', 'Necromancer', 'Temple of the art'], ['necromancer_shop', 'Stevari (shop guardian)', 'Holy mountain'],
+  ['skullfly', 'Skull fly', 'Temple of the art'], ['skullrat', 'Skull rat', 'Temple of the art'],
+  ['ghost', 'Ghost', 'Temple of the art'], ['wraith', 'Wraith', 'Temple of the art'], ['wraith_glowing', 'Glowing wraith', 'Temple of the art'], ['wraith_storm', 'Storm wraith', 'Temple of the art'],
+  ['phantom_a', 'Phantom A', 'Temple of the art'], ['phantom_b', 'Phantom B', 'Temple of the art'],
+  ['flamer', 'Flamer', 'Hell'], ['icer', 'Icer', 'Snowy depths'], ['alchemist', 'Alchemist', 'Hiisi base'], ['failed_alchemist', 'Failed alchemist', 'Temple of the art'],
+  ['enlightened_alchemist', 'Enlightened alchemist', 'Temple of the art'], ['monk', 'Monk', 'Temple of the art'], ['assassin', 'Assassin', 'Temple of the art'],
+  ['barfer', 'Barfer', 'Hell'], ['gazer', 'Gazer', 'Hell'], ['ultimate_killer', 'Ultimate killer', 'Hell'], ['coward', 'Coward', 'Lake'],
+  ['statue', 'Statue', 'Various'], ['eel', 'Eel', 'Lake'], ['fish', 'Fish', 'Lake'], ['fish_large', 'Large fish', 'Lake'],
+  ['deer', 'Deer', 'Surface'], ['sheep', 'Sheep', 'Surface'], ['duck', 'Duck', 'Surface'], ['wolf', 'Wolf', 'Surface'], ['elk', 'Elk', 'Surface'],
+  ['crystal_physics', 'Crystal', 'Various'], ['playerghost', 'Player ghost', 'Various'], ['homunculus', 'Homunculus', 'Various'],
+  ['boss_dragon', 'Suomuhauki (dragon boss)', 'Boss'], ['boss_centipede/boss_centipede', 'Kolmisilmä (final boss)', 'Boss'],
+  ['boss_limbs/boss_limbs', 'Kolmisilmän koipi (limbs boss)', 'Boss'], ['boss_alchemist/boss_alchemist', 'Ylialkemisti (high alchemist)', 'Boss'],
+  ['boss_ghost/boss_ghost', 'Unohdettu (forgotten)', 'Boss'], ['boss_pit/boss_pit', 'Sauvojen tuntija (wand connoisseur)', 'Boss'],
+  ['boss_robot/boss_robot', 'Kolmisilmän silmä (mecha)', 'Boss'], ['boss_wizard/boss_wizard', 'Mestarien mestari (master of masters)', 'Boss'],
+  ['boss_fish/fish_giga', 'Syväolento (leviathan)', 'Boss'],
+];
+
+const BUILTIN_ENEMIES = RAW_ENEMIES.map(([f, name, biome]) => ({
+  file: A + f + '.xml', name, biome, attrs: {},
+}));
+
+// Editable enemy attributes. `scale` converts the in-game display value to the XML value
+// (Noita stores health/damage in units of 25 hp).
+const ENEMY_FIELDS = [
+  { key: 'hp', label: 'Health (hp)', tag: 'DamageModelComponent', attr: 'hp', scale: 25, also: ['max_hp'], group: 'Health', kind: 'num' },
+  { key: 'air_needed', label: 'Needs air', tag: 'DamageModelComponent', attr: 'air_needed', group: 'Health', kind: 'bool' },
+  { key: 'fire_ignite', label: 'Fire ignition chance', tag: 'DamageModelComponent', attr: 'fire_probability_of_ignition', group: 'Health', kind: 'num' },
+  { key: 'blood_material', label: 'Blood material', tag: 'DamageModelComponent', attr: 'blood_material', group: 'Health', kind: 'text', list: 'materials' },
+  { key: 'dm_projectile', label: 'Projectile dmg taken ×', tag: 'damage_multipliers', attr: 'projectile', group: 'Resistances', kind: 'num' },
+  { key: 'dm_explosion', label: 'Explosion dmg taken ×', tag: 'damage_multipliers', attr: 'explosion', group: 'Resistances', kind: 'num' },
+  { key: 'dm_melee', label: 'Melee dmg taken ×', tag: 'damage_multipliers', attr: 'melee', group: 'Resistances', kind: 'num' },
+  { key: 'dm_fire', label: 'Fire dmg taken ×', tag: 'damage_multipliers', attr: 'fire', group: 'Resistances', kind: 'num' },
+  { key: 'dm_ice', label: 'Ice dmg taken ×', tag: 'damage_multipliers', attr: 'ice', group: 'Resistances', kind: 'num' },
+  { key: 'dm_electricity', label: 'Electric dmg taken ×', tag: 'damage_multipliers', attr: 'electricity', group: 'Resistances', kind: 'num' },
+  { key: 'dm_slice', label: 'Slice dmg taken ×', tag: 'damage_multipliers', attr: 'slice', group: 'Resistances', kind: 'num' },
+  { key: 'dm_drill', label: 'Drill dmg taken ×', tag: 'damage_multipliers', attr: 'drill', group: 'Resistances', kind: 'num' },
+  { key: 'herd_id', label: 'Faction (herd)', tag: 'GenomeDataComponent', attr: 'herd_id', group: 'Behaviour', kind: 'text', list: 'herds' },
+  { key: 'aggro', label: 'Aggressiveness (min)', tag: 'AnimalAIComponent', attr: 'aggressiveness_min', group: 'Behaviour', kind: 'num' },
+  { key: 'detect_x', label: 'Detection range', tag: 'AnimalAIComponent', attr: 'creature_detection_range_x', group: 'Behaviour', kind: 'num' },
+  { key: 'can_fly', label: 'Can fly', tag: 'AnimalAIComponent', attr: 'can_fly', group: 'Movement', kind: 'bool' },
+  { key: 'run_velocity', label: 'Run speed', tag: 'CharacterPlatformingComponent', attr: 'run_velocity', group: 'Movement', kind: 'num' },
+  { key: 'fly_velocity_x', label: 'Fly speed', tag: 'CharacterPlatformingComponent', attr: 'fly_velocity_x', group: 'Movement', kind: 'num' },
+  { key: 'jump_velocity_y', label: 'Jump velocity', tag: 'CharacterPlatformingComponent', attr: 'jump_velocity_y', group: 'Movement', kind: 'num' },
+  { key: 'melee_min', label: 'Melee damage min (hp)', tag: 'AnimalAIComponent', attr: 'attack_melee_damage_min', scale: 25, group: 'Attack', kind: 'num' },
+  { key: 'melee_max', label: 'Melee damage max (hp)', tag: 'AnimalAIComponent', attr: 'attack_melee_damage_max', scale: 25, group: 'Attack', kind: 'num' },
+  { key: 'ranged_file', label: 'Ranged projectile file', tag: 'AnimalAIComponent', attr: 'attack_ranged_entity_file', group: 'Attack', kind: 'text', list: 'projectiles' },
+  { key: 'ranged_count_min', label: 'Projectiles per shot (min)', tag: 'AnimalAIComponent', attr: 'attack_ranged_entity_count_min', group: 'Attack', kind: 'num' },
+  { key: 'ranged_count_max', label: 'Projectiles per shot (max)', tag: 'AnimalAIComponent', attr: 'attack_ranged_entity_count_max', group: 'Attack', kind: 'num' },
+  { key: 'ranged_min_dist', label: 'Ranged min distance', tag: 'AnimalAIComponent', attr: 'attack_ranged_min_distance', group: 'Attack', kind: 'num' },
+  { key: 'ranged_max_dist', label: 'Ranged max distance', tag: 'AnimalAIComponent', attr: 'attack_ranged_max_distance', group: 'Attack', kind: 'num' },
+];
+
+// Projectile XML attributes editable for vanilla & custom spells.
+const PROJ_FIELDS = [
+  { key: 'damage', label: 'Impact damage (hp)', tag: 'ProjectileComponent', attr: 'damage', scale: 25 },
+  { key: 'speed_min', label: 'Speed min', tag: 'ProjectileComponent', attr: 'speed_min' },
+  { key: 'speed_max', label: 'Speed max', tag: 'ProjectileComponent', attr: 'speed_max' },
+  { key: 'lifetime', label: 'Lifetime (frames)', tag: 'ProjectileComponent', attr: 'lifetime' },
+  { key: 'explosion_radius', label: 'Explosion radius', tag: 'config_explosion', attr: 'explosion_radius' },
+  { key: 'explosion_damage', label: 'Explosion damage (hp)', tag: 'config_explosion', attr: 'damage', scale: 25 },
+  { key: 'bounces', label: 'Bounces', tag: 'ProjectileComponent', attr: 'bounces_left' },
+  { key: 'knockback', label: 'Knockback force', tag: 'ProjectileComponent', attr: 'knockback_force' },
+];
+
+const HERDS = ['player', 'zombie', 'slimes', 'robot', 'ghost', 'spider', 'fly', 'bat', 'wolf', 'rat', 'fungus', 'ant',
+  'mage', 'mage_swapper', 'orcs', 'flower', 'worm', 'helpless', 'giant', 'ice', 'fire', 'crawler', 'trap', 'boss_dragon', 'eel', 'apparition', 'healer', 'nest', 'curse', 'trap'];
+const MATERIALS = ['blood', 'blood_fungi', 'blood_worm', 'slime', 'acid', 'oil', 'water', 'poison', 'magic_liquid_berserk',
+  'magic_liquid_charm', 'magic_liquid_polymorph', 'magic_liquid_teleportation', 'magic_liquid_invisibility', 'alcohol', 'lava', 'gold', 'diamond'];
+
+// Wand stats editable in generation rules and custom wands.
+const WAND_STATS = [
+  { key: 'mana_max', label: 'Mana max', obj: null, attr: 'mana_max', int: false },
+  { key: 'mana_charge_speed', label: 'Mana charge speed', obj: null, attr: 'mana_charge_speed', int: false },
+  { key: 'deck_capacity', label: 'Capacity', obj: 'gun_config', attr: 'deck_capacity', int: true },
+  { key: 'actions_per_round', label: 'Spells per cast', obj: 'gun_config', attr: 'actions_per_round', int: true },
+  { key: 'reload_time', label: 'Recharge time (frames)', obj: 'gun_config', attr: 'reload_time', int: true },
+  { key: 'fire_rate_wait', label: 'Cast delay (frames)', obj: 'gunaction_config', attr: 'fire_rate_wait', int: true },
+  { key: 'spread_degrees', label: 'Spread (degrees)', obj: 'gunaction_config', attr: 'spread_degrees', int: false },
+  { key: 'speed_multiplier', label: 'Projectile speed ×', obj: 'gunaction_config', attr: 'speed_multiplier', int: false },
+];
+const WAND_TIERS = ['all', '1', '2', '3', '4', '5', '6', '10'];
+
+return { SPELL_TYPES, typeByCode, typeByKey, MAX_TIER, BUILTIN_SPELLS, parseSpawn, BUILTIN_ENEMIES, ENEMY_FIELDS, PROJ_FIELDS, HERDS, MATERIALS, WAND_STATS, WAND_TIERS };
+})();
+
+__m.importer = (() => {
+// Parsers for extracted Noita game data (gun_actions.lua, translation CSV, entity XML).
+// Pure string functions so they can run in the browser and under Node tests.
+const { parseSpawn, typeByKey, ENEMY_FIELDS, PROJ_FIELDS } = __m.data;
+
+// Splits the top-level entries of `actions = { {...}, {...} }`, skipping strings & comments.
+function splitActionEntries(src) {
+  const start = src.search(/actions\s*=\s*\{/);
+  if (start < 0) return [];
+  let i = src.indexOf('{', start) + 1;
+  const entries = [];
+  let depth = 1;
+  let entryStart = -1;
+  while (i < src.length && depth > 0) {
+    const ch = src[i];
+    if (ch === '-' && src[i + 1] === '-') {
+      const long = src.slice(i + 2).match(/^\[(=*)\[/);
+      if (long) {
+        const close = ']' + long[1] + ']';
+        const end = src.indexOf(close, i + 2 + long[0].length);
+        i = end < 0 ? src.length : end + close.length;
+      } else {
+        const nl = src.indexOf('\n', i);
+        i = nl < 0 ? src.length : nl + 1;
+      }
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      i++;
+      while (i < src.length && src[i] !== ch) { if (src[i] === '\\') i++; i++; }
+      i++;
+      continue;
+    }
+    if (ch === '[') {
+      const long = src.slice(i).match(/^\[(=*)\[/);
+      if (long) {
+        const close = ']' + long[1] + ']';
+        const end = src.indexOf(close, i + long[0].length);
+        i = end < 0 ? src.length : end + close.length;
+        continue;
+      }
+    }
+    if (ch === '{') {
+      if (depth === 1) entryStart = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 1 && entryStart >= 0) { entries.push(src.slice(entryStart, i + 1)); entryStart = -1; }
+    }
+    i++;
+  }
+  return entries;
+}
+
+const strField = (body, k) => {
+  const m = body.match(new RegExp('(?:^|[\\s,{])' + k + '\\s*=\\s*"([^"]*)"'));
+  return m ? m[1] : undefined;
+};
+const numField = (body, k) => {
+  const m = body.match(new RegExp('(?:^|[\\s,{])' + k + '\\s*=\\s*(-?[\\d.]+)'));
+  return m ? Number(m[1]) : undefined;
+};
+const deltaIn = (fn, lhs) => {
+  // matches e.g. `c.fire_rate_wait = c.fire_rate_wait + 10` or `- 5`
+  const esc = lhs.replace(/\./g, '\\.');
+  const m = fn.match(new RegExp(esc + '\\s*=\\s*' + esc + '\\s*([+-])\\s*([\\d.]+)'));
+  return m ? (m[1] === '-' ? -1 : 1) * Number(m[2]) : 0;
+};
+
+function parseGunActions(src, translations = {}) {
+  const spells = [];
+  for (const body of splitActionEntries(src)) {
+    const id = strField(body, 'id');
+    if (!id) continue;
+    const typeM = body.match(/type\s*=\s*(ACTION_TYPE_\w+)/);
+    const fnIdx = body.search(/action\s*=\s*function/);
+    const fn = fnIdx >= 0 ? body.slice(fnIdx) : '';
+    const header = fnIdx >= 0 ? body.slice(0, fnIdx) : body;
+    const rel = header.match(/related_projectiles\s*=\s*\{\s*"([^"]+)"/);
+    const addProj = fn.match(/add_projectile(?:_trigger_\w+)?\s*\(\s*"([^"]+)"/);
+    const rawName = strField(header, 'name') || id;
+    const rawDesc = strField(header, 'description') || '';
+    spells.push({
+      id,
+      name: tr(rawName, translations),
+      description: tr(rawDesc, translations),
+      type: typeM ? (typeByKey(typeM[1])?.code ?? 5) : 5,
+      mana: numField(header, 'mana') ?? 0,
+      max_uses: numField(header, 'max_uses') ?? -1,
+      price: numField(header, 'price') ?? 0,
+      spawn: parseSpawn(strField(header, 'spawn_level'), strField(header, 'spawn_probability')),
+      sprite: strField(header, 'sprite') || '',
+      fire_rate_wait: deltaIn(fn, 'c.fire_rate_wait'),
+      reload: deltaIn(fn, 'current_reload_time'),
+      spread: deltaIn(fn, 'c.spread_degrees'),
+      projectile: rel ? rel[1] : addProj ? addProj[1] : null,
+      proj: null,
+    });
+  }
+  return spells;
+}
+
+function tr(key, translations) {
+  if (key && key.startsWith('$')) return translations[key.slice(1)] || key;
+  return key;
+}
+
+// data/translations/common.csv: key,en,...  (fields may be quoted)
+function parseTranslations(csv) {
+  const out = {};
+  for (const line of csv.split(/\r?\n/)) {
+    if (!line) continue;
+    const cells = [];
+    let cur = '';
+    let q = false;
+    for (let i = 0; i < line.length && cells.length < 2; i++) {
+      const c = line[i];
+      if (q) {
+        if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === ',') { cells.push(cur); cur = ''; } else cur += c;
+    }
+    if (cells.length < 2) cells.push(cur);
+    if (cells[0] && cells[1]) out[cells[0]] = cells[1];
+  }
+  return out;
+}
+
+// Returns the attribute value of the first <tag ...> that has it.
+function xmlAttr(xml, tag, attr) {
+  const re = new RegExp('<' + tag + '(\\s[^>]*)?>', 'g');
+  let m;
+  while ((m = re.exec(xml))) {
+    const a = (m[1] || '').match(new RegExp('\\s' + attr + '\\s*=\\s*"([^"]*)"'));
+    if (a) return a[1];
+  }
+  return undefined;
+}
+
+function readFields(xml, fields) {
+  const out = {};
+  for (const f of fields) {
+    const v = xmlAttr(xml, f.tag, f.attr);
+    if (v === undefined) continue;
+    if (f.kind === 'text') out[f.key] = v;
+    else if (f.kind === 'bool') out[f.key] = v === '1' || v === 'true';
+    else { const n = Number(v); if (!Number.isNaN(n)) out[f.key] = round(n * (f.scale || 1)); }
+  }
+  return out;
+}
+
+const round = (n) => Math.round(n * 1000) / 1000;
+
+function parseProjectileXml(xml) {
+  return readFields(xml, PROJ_FIELDS.map((f) => ({ ...f, kind: 'num' })));
+}
+
+function parseEnemyXml(xml, file, translations = {}) {
+  const nameM = xml.match(/<Entity[^>]*\sname\s*=\s*"([^"]*)"/);
+  const base = file.split('/').pop().replace(/\.xml$/, '');
+  const name = nameM ? tr(nameM[1], translations) : base;
+  const isEnemy = /DamageModelComponent/.test(xml) && /(AnimalAIComponent|enemy|mortal)/.test(xml);
+  return {
+    file, name: name.startsWith('$') ? base : name, biome: '', isEnemy, attrs: readFields(xml, ENEMY_FIELDS),
+  };
+}
+
+return { splitActionEntries, parseGunActions, tr, parseTranslations, xmlAttr, round, parseProjectileXml, parseEnemyXml };
+})();
+
+__m.generator = (() => {
+// Turns an editor project into the files of a Noita mod folder.
+const { SPELL_TYPES, typeByCode, ENEMY_FIELDS, PROJ_FIELDS, WAND_STATS } = __m.data;
+
+const luaStr = (s) => '"' + String(s ?? '')
+  .replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
+const xmlEsc = (s) => String(s ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const num = (n) => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return '0';
+  return String(Math.round(v * 100000) / 100000);
+};
+const has = (v) => v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && Number.isNaN(v));
+const luaKey = (k) => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(k) ? k : '[' + luaStr(k) + ']');
+
+function sanitizeModId(s) {
+  const id = String(s || '').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+  return id || 'my_noita_mod';
+}
+const sanitizeSpellId = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9_]+/g, '_').replace(/^_+|_+$/g, '') || 'CUSTOM_SPELL';
+
+function spawnStrings(spawn) {
+  const tiers = Object.keys(spawn || {}).map(Number).filter((n) => !Number.isNaN(n)).sort((a, b) => a - b);
+  if (!tiers.length) return { level: '0', prob: '0' };
+  return { level: tiers.join(','), prob: tiers.map((t) => num(spawn[t])).join(',') };
+}
+
+function luaTable(obj, indent = '  ') {
+  const parts = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (!has(v)) continue;
+    let val;
+    if (typeof v === 'string') val = luaStr(v);
+    else if (typeof v === 'boolean') val = v ? 'true' : 'false';
+    else if (Array.isArray(v)) val = '{' + v.map((x) => (typeof x === 'string' ? luaStr(x) : num(x))).join(', ') + '}';
+    else if (typeof v === 'object') val = luaTable(v, indent + '  ');
+    else val = num(v);
+    parts.push(indent + '  ' + luaKey(k) + ' = ' + val + ',');
+  }
+  return '{\n' + parts.join('\n') + '\n' + indent + '}';
+}
+
+const XML_HELPERS = `-- XML patch helpers: edit attributes in game XML before the world loads.
+local function lua_escape(s) return (s:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%0")) end
+local function fmt(v)
+  if type(v) == "boolean" then return v and "1" or "0" end
+  if type(v) == "number" and v == math.floor(v) and math.abs(v) < 1e9 then return string.format("%d", v) end
+  return tostring(v)
+end
+local function patch_attrs(attrs, attr, value, op)
+  local found = false
+  attrs = attrs:gsub("(%s" .. lua_escape(attr) .. "%s*=%s*\\")([^\\"]*)(\\")", function(a, old, b)
+    found = true
+    if op == "mul" then
+      local n = tonumber(old)
+      if not n then return a .. old .. b end
+      return a .. fmt(n * value) .. b
+    end
+    return a .. fmt(value) .. b
+  end)
+  if not found and op ~= "mul" then
+    local ins = " " .. attr .. "=\\"" .. fmt(value) .. "\\""
+    if attrs:sub(-1) == "/" then attrs = attrs:sub(1, -2) .. ins .. " /" else attrs = attrs .. ins end
+  end
+  return attrs
+end
+local NESTED_PARENT = { damage_multipliers = "DamageModelComponent", config_explosion = "ProjectileComponent" }
+local function inject(xml, parent, snippet)
+  local done = false
+  xml = xml:gsub("<" .. lua_escape(parent) .. "([%s/>][^>]*)>", function(attrs)
+    if done then return nil end
+    done = true
+    if attrs:sub(-1) == "/" then return "<" .. parent .. attrs:sub(1, -2) .. ">" .. snippet .. "</" .. parent .. ">" end
+    return "<" .. parent .. attrs .. ">" .. snippet
+  end)
+  if not done then
+    xml = xml:gsub("<" .. lua_escape(parent) .. ">", function()
+      if done then return nil end
+      done = true
+      return "<" .. parent .. ">" .. snippet
+    end)
+  end
+  return xml, done
+end
+local function patch_xml(path, edits)
+  local ok, xml = pcall(ModTextFileGetContent, path)
+  if not ok or type(xml) ~= "string" or xml == "" then
+    print("[MOD_ID] skipped missing file " .. path)
+    return
+  end
+  for _, e in ipairs(edits) do
+    local tag, attr, value, op = e[1], e[2], e[3], e[4]
+    local hit = false
+    xml = xml:gsub("<" .. lua_escape(tag) .. "([%s/][^>]*)>", function(attrs)
+      hit = true
+      return "<" .. tag .. patch_attrs(attrs, attr, value, op) .. ">"
+    end)
+    xml = xml:gsub("<" .. lua_escape(tag) .. ">", function()
+      hit = true
+      return "<" .. tag .. patch_attrs("", attr, value, op) .. ">"
+    end)
+    if not hit and op ~= "mul" then
+      local snippet = "<" .. tag .. " " .. attr .. "=\\"" .. fmt(value) .. "\\" ></" .. tag .. ">"
+      local ok2
+      xml, ok2 = inject(xml, NESTED_PARENT[tag] or "Base", snippet)
+      if not ok2 then print("[MOD_ID] could not add " .. tag .. "." .. attr .. " to " .. path) end
+    end
+  end
+  ModTextFileSetContent(path, xml)
+end
+`;
+
+function fieldValue(f, v) {
+  if (f.kind === 'bool') return v ? 1 : 0;
+  if (f.kind === 'text') return String(v);
+  return Number(v) / (f.scale || 1);
+}
+const luaVal = (v) => (typeof v === 'string' ? luaStr(v) : num(v));
+const editLine = (tag, attr, v, op) => `{ ${luaStr(tag)}, ${luaStr(attr)}, ${luaVal(v)}${op ? ', ' + luaStr(op) : ''} }`;
+
+function buildProjectileEdits(projEdits) {
+  const out = [];
+  for (const f of PROJ_FIELDS) {
+    const v = projEdits?.[f.key];
+    if (has(v)) out.push([f.tag, f.attr, Number(v) / (f.scale || 1)]);
+  }
+  return out;
+}
+
+function projectileOverrideXml(base, proj) {
+  const pc = [];
+  const ex = [];
+  for (const f of PROJ_FIELDS) {
+    const v = proj?.[f.key];
+    if (!has(v)) continue;
+    const s = `${f.attr}="${num(Number(v) / (f.scale || 1))}"`;
+    (f.tag === 'config_explosion' ? ex : pc).push(s);
+  }
+  const inner = ex.length ? `\n      <config_explosion ${ex.join(' ')} ></config_explosion>\n    ` : '';
+  return `<Entity>\n  <Base file="${xmlEsc(base)}">\n    <ProjectileComponent ${pc.join(' ')} >${inner}</ProjectileComponent>\n  </Base>\n</Entity>\n`;
+}
+
+function dataUrlToBytes(dataUrl) {
+  const b64 = String(dataUrl).split(',')[1] || '';
+  if (typeof atob === 'function') {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  return new Uint8Array(Buffer.from(b64, 'base64'));
+}
+
+function generateMod(project, catalog) {
+  const modId = sanitizeModId(project.meta.id || project.meta.name);
+  const root = `mods/${modId}/`;
+  const files = {};
+  const warnings = [];
+  const init = [];
+  const spellById = new Map(catalog.spells.map((s) => [s.id, s]));
+
+  // ---------- spells ----------
+  const spellEditLines = [];
+  const projPatches = new Map(); // path -> edits
+  const addPatch = (path, edits) => {
+    if (!edits.length) return;
+    if (!projPatches.has(path)) projPatches.set(path, []);
+    projPatches.get(path).push(...edits);
+  };
+  for (const [id, e] of Object.entries(project.spellEdits || {})) {
+    const base = spellById.get(id);
+    const out = {};
+    if (has(e.mana)) out.mana = Number(e.mana);
+    if (has(e.max_uses)) out.max_uses = Number(e.max_uses);
+    if (has(e.price)) out.price = Number(e.price);
+    if (e.disabled) {
+      const sp = spawnStrings(e.spawn || base?.spawn || { 0: 0 });
+      out.spawn_level = sp.level;
+      out.spawn_probability = sp.level.split(',').map(() => '0').join(',');
+    } else if (e.spawn) {
+      const sp = spawnStrings(e.spawn);
+      out.spawn_level = sp.level;
+      out.spawn_probability = sp.prob;
+    }
+    if (has(e.d_fire_rate_wait) && Number(e.d_fire_rate_wait)) out.d_frw = Number(e.d_fire_rate_wait);
+    if (has(e.d_reload) && Number(e.d_reload)) out.d_reload = Number(e.d_reload);
+    if (has(e.d_spread) && Number(e.d_spread)) out.d_spread = Number(e.d_spread);
+    if (has(e.d_damage) && Number(e.d_damage)) out.d_dmg = Number(e.d_damage) / 25;
+    if (has(e.speed_mult) && Number(e.speed_mult) !== 1) out.speed_mult = Number(e.speed_mult);
+    if (Object.keys(out).length) spellEditLines.push(`  ${luaKey(id)} = ${luaTable(out, '  ').trimStart()},`);
+    const projEdits = buildProjectileEdits(e.proj);
+    if (projEdits.length) {
+      if (base?.projectile) addPatch(base.projectile, projEdits);
+      else warnings.push(`${id}: projectile changes ignored (no known projectile file — import game data or the spell has none).`);
+    }
+  }
+
+  const g = project.globals || {};
+  const typeMults = {};
+  for (const t of SPELL_TYPES) {
+    const m = g.spawnMultByType?.[t.code];
+    if (has(m) && Number(m) !== 1) typeMults[t.key] = Number(m);
+  }
+  const globalsUsed = (has(g.manaMult) && Number(g.manaMult) !== 1) || (has(g.priceMult) && Number(g.priceMult) !== 1)
+    || g.unlimitedUses || Object.keys(typeMults).length;
+
+  const custom = (project.customSpells || []).filter((s) => s.id);
+  const customLua = [];
+  for (const s of custom) {
+    const id = sanitizeSpellId(s.id);
+    const t = typeByCode(Number(s.type));
+    const sp = spawnStrings(s.spawn);
+    let sprite = s.sprite || 'data/ui_gfx/gun_actions/light_bullet.png';
+    if (s.spriteData) {
+      const p = `files/ui_gfx/${id.toLowerCase()}.png`;
+      files[p] = dataUrlToBytes(s.spriteData);
+      sprite = root + p;
+    }
+    let projPath = s.projBase || '';
+    const projOverrides = buildProjectileEdits(s.proj);
+    if (projPath && projOverrides.length) {
+      const p = `files/projectiles/${id.toLowerCase()}.xml`;
+      files[p] = projectileOverrideXml(projPath, s.proj);
+      projPath = root + p;
+    }
+    const body = [];
+    if (Number(s.fire_rate_wait)) body.push(`c.fire_rate_wait = c.fire_rate_wait + ${num(s.fire_rate_wait)}`);
+    if (Number(s.reload)) body.push(`current_reload_time = current_reload_time + ${num(s.reload)}`);
+    if (Number(s.spread)) body.push(`c.spread_degrees = c.spread_degrees + ${num(s.spread)}`);
+    if (Number(s.damage_add)) body.push(`c.damage_projectile_add = c.damage_projectile_add + ${num(Number(s.damage_add) / 25)}`);
+    if (has(s.speed_mult) && Number(s.speed_mult) !== 1) body.push(`c.speed_multiplier = c.speed_multiplier * ${num(s.speed_mult)}`);
+    if (Number(s.bounces)) body.push(`c.bounces = c.bounces + ${num(s.bounces)}`);
+    if (Number(s.lifetime_add)) body.push(`c.lifetime_add = c.lifetime_add + ${num(s.lifetime_add)}`);
+    if (Number(s.explosion_radius)) body.push(`c.explosion_radius = c.explosion_radius + ${num(s.explosion_radius)}`);
+    if (Number(s.crit_chance)) body.push(`c.damage_critical_chance = c.damage_critical_chance + ${num(s.crit_chance)}`);
+    for (const extra of String(s.extra_entities || '').split(',').map((x) => x.trim()).filter(Boolean)) {
+      body.push(`c.extra_entities = c.extra_entities .. ${luaStr(extra + ',')}`);
+    }
+    const isProj = t.code === 0 || t.code === 1 || t.code === 4 || t.code === 5;
+    if (isProj && projPath) {
+      const count = Math.max(1, Math.floor(Number(s.projCount) || 1));
+      const trig = s.trigger || 'none';
+      const draws = Math.max(1, Math.floor(Number(s.triggerDraws) || 1));
+      let call;
+      if (trig === 'hit') call = `add_projectile_trigger_hit_world(${luaStr(projPath)}, ${draws})`;
+      else if (trig === 'timer') call = `add_projectile_trigger_timer(${luaStr(projPath)}, ${Math.max(1, Math.floor(Number(s.triggerDelay) || 10))}, ${draws})`;
+      else if (trig === 'death') call = `add_projectile_trigger_death(${luaStr(projPath)}, ${draws})`;
+      else call = `add_projectile(${luaStr(projPath)})`;
+      body.push(count > 1 ? `for i = 1, ${count} do ${call} end` : call);
+    } else if (isProj && !projPath && !s.rawLua) {
+      warnings.push(`Custom spell ${id}: no projectile chosen, it will do nothing when cast.`);
+    }
+    const draw = has(s.draw) ? Math.floor(Number(s.draw)) : (t.code === 2 ? 1 : 0);
+    if (draw > 0) body.push(`draw_actions(${draw}, true)`);
+    if (s.rawLua) body.push(...String(s.rawLua).split('\n'));
+    const fields = [
+      `id = ${luaStr(id)}`,
+      `name = ${luaStr(s.name || id)}`,
+      `description = ${luaStr(s.description || '')}`,
+      `sprite = ${luaStr(sprite)}`,
+      `type = ${t.key}`,
+      `spawn_level = ${luaStr(sp.level)}`,
+      `spawn_probability = ${luaStr(sp.prob)}`,
+      `price = ${num(s.price ?? 100)}`,
+      `mana = ${num(s.mana ?? 10)}`,
+    ];
+    if (has(s.max_uses) && Number(s.max_uses) >= 0) fields.push(`max_uses = ${num(s.max_uses)}`);
+    if (projPath) fields.push(`related_projectiles = { ${luaStr(projPath)} }`);
+    customLua.push(`table.insert(actions, {\n  ${fields.join(',\n  ')},\n  action = function()\n${body.map((l) => '    ' + l).join('\n')}\n  end,\n})`);
+  }
+
+  if (spellEditLines.length || custom.length || globalsUsed) {
+    const L = [`-- Generated by Noita Mod Forge: spell changes for ${modId}`];
+    if (globalsUsed) {
+      L.push(`local GLOBAL = ${luaTable({
+        mana_mult: has(g.manaMult) && Number(g.manaMult) !== 1 ? Number(g.manaMult) : undefined,
+        price_mult: has(g.priceMult) && Number(g.priceMult) !== 1 ? Number(g.priceMult) : undefined,
+        unlimited_uses: g.unlimitedUses ? true : undefined,
+      }, '')}`);
+      L.push(`local TYPE_SPAWN_MULT = ${luaTable(Object.fromEntries(Object.entries(typeMults)), '')}`
+        .replace(/(\s)(ACTION_TYPE_\w+) = /g, '$1[$2] = '));
+      L.push(`local function scale_probs(s, m)
+  return (s:gsub("[%d%.]+", function(n) return tostring(tonumber(n) * m) end))
+end
+for _, a in ipairs(actions) do
+  if GLOBAL.mana_mult and a.mana and a.mana > 0 then a.mana = math.floor(a.mana * GLOBAL.mana_mult + 0.5) end
+  if GLOBAL.price_mult and a.price then a.price = math.floor(a.price * GLOBAL.price_mult + 0.5) end
+  if GLOBAL.unlimited_uses then a.max_uses = nil end
+  local m = TYPE_SPAWN_MULT[a.type]
+  if m and a.spawn_probability then a.spawn_probability = scale_probs(a.spawn_probability, m) end
+end`);
+    }
+    if (spellEditLines.length) {
+      L.push(`local EDITS = {\n${spellEditLines.join('\n')}\n}`);
+      L.push(`for _, a in ipairs(actions) do
+  local e = EDITS[a.id]
+  if e then
+    if e.mana then a.mana = e.mana end
+    if e.max_uses then
+      if e.max_uses < 0 then a.max_uses = nil else a.max_uses = e.max_uses end
+    end
+    if e.price then a.price = e.price end
+    if e.spawn_level then a.spawn_level = e.spawn_level end
+    if e.spawn_probability then a.spawn_probability = e.spawn_probability end
+    if e.d_frw or e.d_reload or e.d_spread or e.d_dmg or e.speed_mult then
+      local orig = a.action
+      a.action = function(...)
+        if e.d_frw then c.fire_rate_wait = c.fire_rate_wait + e.d_frw end
+        if e.d_reload then current_reload_time = current_reload_time + e.d_reload end
+        if e.d_spread then c.spread_degrees = c.spread_degrees + e.d_spread end
+        if e.d_dmg then c.damage_projectile_add = c.damage_projectile_add + e.d_dmg end
+        if e.speed_mult then c.speed_multiplier = c.speed_multiplier * e.speed_mult end
+        return orig(...)
+      end
+    end
+  end
+end`);
+    }
+    if (customLua.length) L.push('-- Custom spells', ...customLua);
+    files['files/gun_actions_append.lua'] = L.join('\n\n') + '\n';
+    init.push(`ModLuaFileAppend("data/scripts/gun/gun_actions.lua", "${root}files/gun_actions_append.lua")`);
+  }
+
+  // ---------- enemies ----------
+  const enemyBlocks = [];
+  const hpMult = has(g.enemyHpMult) && Number(g.enemyHpMult) !== 1 ? Number(g.enemyHpMult) : null;
+  const enemyFiles = new Set([...Object.keys(project.enemyEdits || {})]);
+  if (hpMult) catalog.enemies.forEach((en) => enemyFiles.add(en.file));
+  for (const file of enemyFiles) {
+    const e = project.enemyEdits?.[file] || {};
+    const lines = [];
+    for (const f of ENEMY_FIELDS) {
+      const v = e[f.key];
+      if (!has(v)) continue;
+      const val = fieldValue(f, v);
+      lines.push(editLine(f.tag, f.attr, val));
+      for (const a of f.also || []) lines.push(editLine(f.tag, a, val));
+    }
+    if (hpMult && !has(e.hp)) {
+      lines.push(editLine('DamageModelComponent', 'hp', hpMult, 'mul'));
+      lines.push(editLine('DamageModelComponent', 'max_hp', hpMult, 'mul'));
+    }
+    for (const c of e.custom || []) {
+      if (!c.tag || !c.attr) continue;
+      const n = Number(c.value);
+      lines.push(editLine(c.tag, c.attr, c.value !== '' && !Number.isNaN(n) ? n : String(c.value ?? '')));
+    }
+    if (lines.length) enemyBlocks.push(`patch_xml(${luaStr(file)}, {\n  ${lines.join(',\n  ')},\n})`);
+  }
+  for (const [path, edits] of projPatches) {
+    enemyBlocks.push(`patch_xml(${luaStr(path)}, {\n  ${edits.map((e) => editLine(...e)).join(',\n  ')},\n})`);
+  }
+
+  // ---------- wand generation ----------
+  const rules = {};
+  for (const [tier, stats] of Object.entries(project.wandGen?.tiers || {})) {
+    const r = {};
+    for (const s of WAND_STATS) {
+      const x = stats?.[s.key];
+      if (!x) continue;
+      const o = {};
+      if (has(x.mult) && Number(x.mult) !== 1) o.mult = Number(x.mult);
+      if (has(x.add) && Number(x.add) !== 0) o.add = Number(x.add);
+      if (has(x.min)) o.min = Number(x.min);
+      if (has(x.max)) o.max = Number(x.max);
+      if (Object.keys(o).length) r[s.key] = o;
+    }
+    if (stats?.shuffle && stats.shuffle !== 'keep') r.shuffle = stats.shuffle;
+    if (Object.keys(r).length) rules[tier] = r;
+  }
+  if (Object.keys(rules).length) {
+    files['files/gun_procedural_append.lua'] = `-- Generated by Noita Mod Forge: wand generation rules for ${modId}
+local RULES = ${luaTable(rules, '')}
+local STATS = {
+${WAND_STATS.map((s) => `  { ${luaStr(s.key)}, ${s.obj ? luaStr(s.obj) : 'nil'}, ${luaStr(s.attr)}, ${s.int} },`).join('\n')}
+}
+local function get(ac, obj, attr)
+  if obj then return ComponentObjectGetValue2(ac, obj, attr) end
+  return ComponentGetValue2(ac, attr)
+end
+local function set(ac, obj, attr, v)
+  if obj then ComponentObjectSetValue2(ac, obj, attr, v) else ComponentSetValue2(ac, attr, v) end
+end
+local function apply(ac, rule)
+  if not rule then return end
+  for _, s in ipairs(STATS) do
+    local r = rule[s[1]]
+    if r then
+      local v = get(ac, s[2], s[3])
+      if type(v) == "number" then
+        if r.mult then v = v * r.mult end
+        if r.add then v = v + r.add end
+        if r.min and v < r.min then v = r.min end
+        if r.max and v > r.max then v = r.max end
+        if s[4] then v = math.floor(v + 0.5) end
+        set(ac, s[2], s[3], v)
+      end
+    end
+  end
+  if rule.shuffle == "never" then ComponentObjectSetValue2(ac, "gun_config", "shuffle_deck_when_empty", false) end
+  if rule.shuffle == "always" then ComponentObjectSetValue2(ac, "gun_config", "shuffle_deck_when_empty", true) end
+end
+if type(generate_gun) == "function" then
+  local orig_generate_gun = generate_gun
+  function generate_gun(cost, level, ...)
+    local result = orig_generate_gun(cost, level, ...)
+    local entity_id = GetUpdatedEntityID()
+    local ac = entity_id and EntityGetFirstComponentIncludingDisabled(entity_id, "AbilityComponent")
+    if ac then
+      apply(ac, RULES.all)
+      apply(ac, RULES[tostring(level)])
+      ComponentSetValue2(ac, "mana", ComponentGetValue2(ac, "mana_max"))
+    end
+    return result
+  end
+end
+`;
+    init.push(`ModLuaFileAppend("data/scripts/gun/procedural/gun_procedural.lua", "${root}files/gun_procedural_append.lua")`);
+  }
+
+  // ---------- custom wands & loadout ----------
+  const wands = (project.customWands || []);
+  const startWands = wands.filter((w) => w.spawnAtStart);
+  const lo = project.loadout || {};
+  const spawnLines = [];
+  if (wands.length) {
+    files['files/wand_setup.lua'] = `dofile_once("data/scripts/gun/procedural/gun_action_utils.lua")
+function ${modId}_setup_wand(wand, cfg)
+  if not wand or wand == 0 then return end
+  local ac = EntityGetFirstComponentIncludingDisabled(wand, "AbilityComponent")
+  if not ac then return end
+  for _, child in ipairs(EntityGetAllChildren(wand) or {}) do
+    if EntityGetFirstComponentIncludingDisabled(child, "ItemActionComponent") then
+      EntityRemoveFromParent(child)
+      EntityKill(child)
+    end
+  end
+  for _, id in ipairs(cfg.always or {}) do AddGunActionPermanent(wand, id) end
+  for _, id in ipairs(cfg.spells or {}) do AddGunAction(wand, id) end
+  ComponentSetValue2(ac, "mana_max", cfg.mana_max)
+  ComponentSetValue2(ac, "mana_charge_speed", cfg.mana_charge_speed)
+  ComponentSetValue2(ac, "mana", cfg.mana_max)
+  ComponentObjectSetValue2(ac, "gun_config", "deck_capacity", cfg.deck_capacity)
+  ComponentObjectSetValue2(ac, "gun_config", "actions_per_round", cfg.actions_per_round)
+  ComponentObjectSetValue2(ac, "gun_config", "reload_time", cfg.reload_time)
+  ComponentObjectSetValue2(ac, "gun_config", "shuffle_deck_when_empty", cfg.shuffle)
+  ComponentObjectSetValue2(ac, "gunaction_config", "fire_rate_wait", cfg.fire_rate_wait)
+  ComponentObjectSetValue2(ac, "gunaction_config", "spread_degrees", cfg.spread_degrees)
+  ComponentObjectSetValue2(ac, "gunaction_config", "speed_multiplier", cfg.speed_multiplier)
+  if cfg.name and cfg.name ~= "" then
+    ComponentSetValue2(ac, "ui_name", cfg.name)
+    local ic = EntityGetFirstComponentIncludingDisabled(wand, "ItemComponent")
+    if ic then
+      ComponentSetValue2(ic, "item_name", cfg.name)
+      ComponentSetValue2(ic, "always_use_item_name_in_ui", true)
+    end
+  end
+end
+`;
+    wands.forEach((w, i) => {
+      const cfg = {
+        name: w.name || '', mana_max: Number(w.mana_max ?? 500), mana_charge_speed: Number(w.mana_charge_speed ?? 200),
+        deck_capacity: Math.max(1, Math.floor(Number(w.deck_capacity ?? 10))), actions_per_round: Math.max(1, Math.floor(Number(w.actions_per_round ?? 1))),
+        reload_time: Math.floor(Number(w.reload_time ?? 20)), fire_rate_wait: Math.floor(Number(w.fire_rate_wait ?? 10)),
+        spread_degrees: Number(w.spread_degrees ?? 0), speed_multiplier: Number(w.speed_multiplier ?? 1), shuffle: !!w.shuffle,
+        spells: (w.spells || []).filter(Boolean), always: (w.always || []).filter(Boolean),
+      };
+      if (cfg.spells.length > cfg.deck_capacity) warnings.push(`Wand "${w.name || i + 1}": ${cfg.spells.length} spells but capacity ${cfg.deck_capacity}.`);
+      files[`files/wands/wand_${i + 1}.lua`] = `dofile_once("${root}files/wand_setup.lua")
+${modId}_setup_wand(GetUpdatedEntityID(), ${luaTable(cfg, '')})
+`;
+    });
+  }
+  const startSpells = (lo.spells || []).filter(Boolean);
+  const playerTweaks = has(lo.hp) || has(lo.gold);
+  if (startWands.length || startSpells.length || playerTweaks || lo.removeStartingWands) {
+    spawnLines.push(`function OnPlayerSpawned(player_entity)
+  if GameHasFlagRun("${modId}_loadout_given") then return end
+  GameAddFlagRun("${modId}_loadout_given")
+  local x, y = EntityGetTransform(player_entity)`);
+    if (lo.removeStartingWands) {
+      spawnLines.push(`  for _, child in ipairs(EntityGetAllChildren(player_entity) or {}) do
+    if EntityGetName(child) == "inventory_quick" then
+      for _, item in ipairs(EntityGetAllChildren(child) or {}) do
+        if EntityHasTag(item, "wand") then EntityKill(item) end
+      end
+    end
+  end`);
+    }
+    if (has(lo.hp)) {
+      spawnLines.push(`  local dm = EntityGetFirstComponent(player_entity, "DamageModelComponent")
+  if dm then
+    ComponentSetValue2(dm, "max_hp", ${num(Number(lo.hp) / 25)})
+    ComponentSetValue2(dm, "hp", ${num(Number(lo.hp) / 25)})
+  end`);
+    }
+    if (has(lo.gold)) {
+      spawnLines.push(`  local wallet = EntityGetFirstComponent(player_entity, "WalletComponent")
+  if wallet then ComponentSetValue2(wallet, "money", ${Math.floor(Number(lo.gold))}) end`);
+    }
+    if (startWands.length) {
+      wands.forEach((w, i) => {
+        if (!w.spawnAtStart) return;
+        spawnLines.push(`  do
+    local wand = EntityLoad("data/entities/items/wand_level_01.xml", x - 30 + ${(i % 6) * 12}, y - 10)
+    EntityAddComponent2(wand, "LuaComponent", {
+      script_source_file = "${root}files/wands/wand_${i + 1}.lua",
+      execute_every_n_frame = 2,
+      execute_times = 1,
+      remove_after_executed = true,
+    })
+  end`);
+      });
+    }
+    if (startSpells.length) {
+      spawnLines.push(`  dofile_once("data/scripts/gun/procedural/gun_action_utils.lua")
+  pcall(dofile_once, "data/scripts/game_helpers.lua")
+  local spells = { ${startSpells.map(luaStr).join(', ')} }
+  for i, id in ipairs(spells) do
+    local sx, sy = x - 40 + ((i - 1) % 10) * 9, y - 20 - math.floor((i - 1) / 10) * 9
+    if CreateItemActionEntity then
+      CreateItemActionEntity(id, sx, sy)
+    else
+      local card = EntityLoad("data/entities/misc/custom_cards/action.xml", sx, sy)
+      local iac = EntityGetFirstComponentIncludingDisabled(card, "ItemActionComponent")
+      if iac then ComponentSetValue2(iac, "action_id", id) end
+    end
+  end`);
+    }
+    spawnLines.push('end');
+  }
+
+  const spawnCode = spawnLines.join('\n');
+
+  // ---------- init.lua ----------
+  const initParts = [`-- ${project.meta.name || modId}\n-- Generated by Noita Mod Forge. Safe to edit by hand.`];
+  if (enemyBlocks.length) initParts.push(XML_HELPERS.replace(/MOD_ID/g, modId), ...enemyBlocks);
+  if (init.length) initParts.push(init.join('\n'));
+  if (spawnCode) initParts.push(spawnCode);
+  if (initParts.length === 1) warnings.push('The mod has no changes yet.');
+  files['init.lua'] = initParts.join('\n\n') + '\n';
+  files['mod.xml'] = `<Mod\n  name="${xmlEsc(project.meta.name || modId)}"\n  description="${xmlEsc(project.meta.description || 'Made with Noita Mod Forge')}"\n  request_no_api_restrictions="0"\n>\n</Mod>\n`;
+
+  const finalFiles = {};
+  for (const [p, c] of Object.entries(files)) finalFiles[`${modId}/${p}`] = c;
+  return { modId, files: finalFiles, warnings };
+}
+
+return { luaStr, xmlEsc, sanitizeModId, sanitizeSpellId, spawnStrings, buildProjectileEdits, generateMod };
+})();
+
+__m.zip = (() => {
+// Minimal dependency-free ZIP writer (STORE, no compression) — enough for mod folders.
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+// files: { "path/in/zip": string | Uint8Array } → Uint8Array
+function makeZip(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  for (const [path, content] of Object.entries(files)) {
+    const name = enc.encode(path);
+    const data = typeof content === 'string' ? enc.encode(content) : content;
+    const crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+    lh.setUint16(8, 0, true); lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true);
+    lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    locals.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true); ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true);
+    ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+    centrals.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const cdSize = centrals.reduce((n, a) => n + a.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  const count = Object.keys(files).length;
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, count, true); end.setUint16(10, count, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  const parts = [...locals, ...centrals, new Uint8Array(end.buffer)];
+  const out = new Uint8Array(parts.reduce((n, a) => n + a.length, 0));
+  let p = 0;
+  for (const a of parts) { out.set(a, p); p += a.length; }
+  return out;
+}
+
+return { makeZip };
+})();
+
+__m.app = (() => {
+const {
+  SPELL_TYPES, typeByCode, MAX_TIER, BUILTIN_SPELLS, BUILTIN_ENEMIES, ENEMY_FIELDS, PROJ_FIELDS,
+  HERDS, MATERIALS, WAND_STATS, WAND_TIERS,
+} = __m.data;
+const { parseGunActions, parseTranslations, parseEnemyXml, parseProjectileXml } = __m.importer;
+const { generateMod, sanitizeModId, sanitizeSpellId } = __m.generator;
+const { makeZip } = __m.zip;
+
+// ───────────────────────── helpers ─────────────────────────
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const has = (v) => v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && Number.isNaN(v));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const fmtNum = (v) => (has(v) ? String(Math.round(Number(v) * 1000) / 1000) : '');
+const isTextTarget = (el) => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+
+// Numeric input with relative expressions: "*2", "x1.5", "/2", "+=5", "-=5", "150%"; plain numbers are absolute.
+function parseNumInput(str, cur) {
+  const s = String(str).trim().replace(',', '.');
+  const c = Number(cur) || 0;
+  let m;
+  if ((m = s.match(/^[*x×]\s*(-?[\d.]+)$/i))) return c * Number(m[1]);
+  if ((m = s.match(/^\/\s*(-?[\d.]+)$/))) return Number(m[1]) === 0 ? NaN : c / Number(m[1]);
+  if ((m = s.match(/^\+=\s*(-?[\d.]+)$/))) return c + Number(m[1]);
+  if ((m = s.match(/^-=\s*(-?[\d.]+)$/))) return c - Number(m[1]);
+  if ((m = s.match(/^(-?[\d.]+)\s*%$/))) return c * Number(m[1]) / 100;
+  if (/^(inf|∞|infinite|unlimited)$/i.test(s)) return -1;
+  return s === '' ? NaN : Number(s);
+}
+
+// ───────────────────────── state ─────────────────────────
+const LS_PROJECT = 'nmf.project.v1';
+const LS_CATALOG = 'nmf.catalog.v1';
+
+const newProject = () => ({
+  meta: { name: 'My Noita Mod', id: '', description: '' },
+  globals: {}, spellEdits: {}, customSpells: [], wandGen: { tiers: {} }, customWands: [],
+  enemyEdits: {}, loadout: { spells: [] },
+});
+const builtinCatalog = () => ({ source: 'builtin', spells: clone(BUILTIN_SPELLS), enemies: clone(BUILTIN_ENEMIES), projectiles: [] });
+
+let project = Object.assign(newProject(), lsGet(LS_PROJECT) || {});
+let catalog = lsGet(LS_CATALOG) || builtinCatalog();
+const undoStack = [];
+const redoStack = [];
+let lastCoalesce = { key: null, t: 0 };
+let saveTimer = null;
+let savedAt = null;
+
+const ui = {
+  view: 'spells',
+  sel: { spells: new Set(), custom: new Set(), enemies: new Set() },
+  anchor: {}, cursor: {}, visible: {},
+  sort: { spells: { key: 'name', dir: 1 }, custom: { key: 'name', dir: 1 }, enemies: { key: 'name', dir: 1 } },
+  filter: { spells: { q: '', types: new Set(), modified: false }, custom: { q: '' }, enemies: { q: '', biome: '', modified: false } },
+  palette: { q: '', types: new Set(), sel: new Set() },
+  wandTab: 'custom', wandTier: 'all', exportFile: null,
+  slotSel: { strip: null, idxs: new Set(), anchor: null },
+  activeStrip: null,
+  clipboard: null,
+};
+
+function mutate(fn, coalesceKey) {
+  const now = Date.now();
+  if (!(coalesceKey && lastCoalesce.key === coalesceKey && now - lastCoalesce.t < 1200)) {
+    undoStack.push(JSON.stringify(project));
+    if (undoStack.length > 300) undoStack.shift();
+    redoStack.length = 0;
+  }
+  lastCoalesce = { key: coalesceKey, t: now };
+  fn(project);
+  tidy();
+  scheduleSave();
+  render();
+}
+function undo() {
+  if (!undoStack.length) return toast('Nothing to undo');
+  redoStack.push(JSON.stringify(project));
+  project = JSON.parse(undoStack.pop());
+  lastCoalesce = { key: null, t: 0 };
+  scheduleSave(); render();
+}
+function redo() {
+  if (!redoStack.length) return toast('Nothing to redo');
+  undoStack.push(JSON.stringify(project));
+  project = JSON.parse(redoStack.pop());
+  lastCoalesce = { key: null, t: 0 };
+  scheduleSave(); render();
+}
+function tidy() {
+  const prune = (o) => {
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if (k === 'spawn') continue; // an empty spawn table means "never spawns", keep it
+      if (v && typeof v === 'object' && !Array.isArray(v)) { prune(v); if (!Object.keys(v).length) delete o[k]; } else if (!has(v) || v === false) delete o[k];
+      else if (Array.isArray(v) && !v.length) delete o[k];
+    }
+  };
+  for (const id of Object.keys(project.spellEdits)) { prune(project.spellEdits[id]); if (!Object.keys(project.spellEdits[id]).length) delete project.spellEdits[id]; }
+  for (const f of Object.keys(project.enemyEdits)) {
+    const e = project.enemyEdits[f];
+    if (e.custom) e.custom = e.custom.filter((c) => c.tag || c.attr || c.value);
+    prune(e);
+    if (!Object.keys(e).length) delete project.enemyEdits[f];
+  }
+}
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if (lsSet(LS_PROJECT, project)) savedAt = new Date();
+    else toast('Could not autosave (browser storage full or blocked). Use Project → Save.', true);
+    renderStatus();
+  }, 300);
+}
+
+// ───────────────────────── lookups ─────────────────────────
+const spellIndex = () => new Map(catalog.spells.map((s) => [s.id, s]));
+let SPELLS = spellIndex();
+const customAsSpells = () => project.customSpells.map((c) => ({ id: sanitizeSpellId(c.id), name: c.name || c.id, type: Number(c.type), custom: true }));
+function spellMeta(id) {
+  return SPELLS.get(id) || customAsSpells().find((s) => s.id === id) || { id, name: id, type: 5 };
+}
+const allPaletteSpells = () => [...customAsSpells(), ...catalog.spells];
+function projectileList() {
+  const set = new Set(catalog.projectiles || []);
+  catalog.spells.forEach((s) => s.projectile && set.add(s.projectile));
+  return [...set].sort();
+}
+
+// ───────────────────────── spell fields ─────────────────────────
+const SPELL_FIELDS = [
+  { key: 'mana', label: 'Mana cost', edit: 'mana', group: 'Casting' },
+  { key: 'max_uses', label: 'Max uses (-1 = ∞)', edit: 'max_uses', group: 'Casting', fmt: (v) => (Number(v) < 0 ? '∞' : v) },
+  { key: 'fire_rate_wait', label: 'Cast delay (frames)', delta: 'd_fire_rate_wait', group: 'Casting' },
+  { key: 'reload', label: 'Recharge time (frames)', delta: 'd_reload', group: 'Casting' },
+  { key: 'spread', label: 'Spread (degrees)', delta: 'd_spread', group: 'Casting' },
+  { key: 'd_damage', label: 'Bonus damage (hp)', edit: 'd_damage', base: () => 0, group: 'Casting', hint: 'Added to every projectile this spell fires.' },
+  { key: 'speed_mult', label: 'Projectile speed ×', edit: 'speed_mult', base: () => 1, group: 'Casting', step: 0.05 },
+  { key: 'price', label: 'Shop price', edit: 'price', group: 'Casting', step: 10 },
+  ...PROJ_FIELDS.map((f) => ({ key: 'proj_' + f.key, label: f.label, proj: f.key, group: 'Projectile file' })),
+];
+const SPELL_FIELD = Object.fromEntries(SPELL_FIELDS.map((f) => [f.key, f]));
+const sEdit = (id) => project.spellEdits[id] || {};
+function spellBase(s, f) {
+  if (f.base) return f.base(s);
+  if (f.proj) return s.proj?.[f.proj];
+  return s[f.key];
+}
+function spellGet(s, f) {
+  const e = sEdit(s.id);
+  if (f.proj) return e.proj?.[f.proj] ?? s.proj?.[f.proj];
+  if (f.delta) return (Number(s[f.key]) || 0) + (Number(e[f.delta]) || 0);
+  return e[f.edit] ?? spellBase(s, f);
+}
+function spellIsMod(s, f) {
+  const e = sEdit(s.id);
+  if (f.proj) return has(e.proj?.[f.proj]);
+  if (f.delta) return has(e[f.delta]) && Number(e[f.delta]) !== 0;
+  return has(e[f.edit]);
+}
+function spellSet(p, s, f, v) {
+  const e = (p.spellEdits[s.id] ||= {});
+  if (f.proj) {
+    e.proj ||= {};
+    if (!has(v) || v === s.proj?.[f.proj]) delete e.proj[f.proj]; else e.proj[f.proj] = v;
+  } else if (f.delta) {
+    if (!has(v)) delete e[f.delta]; else e[f.delta] = Math.round((v - (Number(s[f.key]) || 0)) * 1000) / 1000;
+  } else if (!has(v) || v === spellBase(s, f)) delete e[f.edit];
+  else e[f.edit] = v;
+}
+const spellSpawn = (s) => sEdit(s.id).spawn || s.spawn || {};
+const spellModified = (s) => !!project.spellEdits[s.id];
+
+// ───────────────────────── rendering root ─────────────────────────
+const VIEWS = [
+  { id: 'spells', label: 'Spells', ico: '✦', sep: 'Edit the game' },
+  { id: 'enemies', label: 'Enemies', ico: '☠' },
+  { id: 'wands', label: 'Wands', ico: '⚚', drop: true },
+  { id: 'globals', label: 'Global tweaks', ico: '⚙' },
+  { id: 'custom', label: 'Custom spells', ico: '✚', sep: 'Add content', drop: true },
+  { id: 'loadout', label: 'Starting loadout', ico: '⚑', drop: true },
+  { id: 'export', label: 'Export mod', ico: '⬇', sep: 'Finish' },
+];
+
+function render() {
+  const focus = captureFocus();
+  const scroll = $('#main .view-body')?.scrollTop;
+  const iscroll = $('#inspector').scrollTop;
+  SPELLS = spellIndex();
+  $('#mod-name').value = project.meta.name || '';
+  renderNav();
+  const main = $('#main');
+  main.innerHTML = '';
+  const insp = $('#inspector');
+  insp.innerHTML = '';
+  ({ spells: viewSpells, custom: viewCustom, enemies: viewEnemies, wands: viewWands, loadout: viewLoadout, globals: viewGlobals, export: viewExport })[ui.view](main, insp);
+  if (scroll && $('#main .view-body')) $('#main .view-body').scrollTop = scroll;
+  insp.scrollTop = iscroll;
+  restoreFocus(focus);
+  renderStatus();
+  $('#btn-undo').disabled = !undoStack.length;
+  $('#btn-redo').disabled = !redoStack.length;
+}
+function captureFocus() {
+  const a = document.activeElement;
+  if (!a || !a.dataset?.fid) return null;
+  return { fid: a.dataset.fid, start: a.selectionStart, end: a.selectionEnd };
+}
+function restoreFocus(f) {
+  if (!f) return;
+  const el = document.querySelector(`[data-fid="${CSS.escape(f.fid)}"]`);
+  if (!el) return;
+  el.focus();
+  try { if (f.start != null) el.setSelectionRange(f.start, f.end); } catch { /* not a text input */ }
+}
+
+function navBadge(id) {
+  switch (id) {
+    case 'spells': return Object.keys(project.spellEdits).length;
+    case 'custom': return project.customSpells.length;
+    case 'enemies': return Object.keys(project.enemyEdits).length;
+    case 'wands': return project.customWands.length + Object.keys(project.wandGen.tiers || {}).filter((t) => Object.keys(project.wandGen.tiers[t] || {}).length).length;
+    case 'loadout': return (project.loadout.spells || []).length + project.customWands.filter((w) => w.spawnAtStart).length;
+    case 'globals': {
+      let n = 0;
+      for (const [k, v] of Object.entries(project.globals)) {
+        if (k === 'spawnMultByType') n += Object.values(v || {}).filter((x) => has(x) && Number(x) !== 1).length;
+        else if (has(v) && v !== 1 && v !== false) n++;
+      }
+      return n;
+    }
+    default: return 0;
+  }
+}
+function renderNav() {
+  const nav = $('#nav');
+  nav.innerHTML = VIEWS.map((v) => {
+    const b = navBadge(v.id);
+    return `${v.sep ? `<div class="nav-sep">${v.sep}</div>` : ''}<div class="nav-item ${ui.view === v.id ? 'active' : ''}" data-view="${v.id}" ${v.drop ? 'data-drop="1"' : ''} title="${v.drop ? 'Drop spells here' : ''}"><span class="ico">${v.ico}</span>${v.label}${b ? `<span class="badge">${b}</span>` : ''}</div>`;
+  }).join('') + `<div class="nav-hint">Tip: drag selected spells onto <b>Wands</b>, <b>Custom spells</b> or <b>Starting loadout</b>. Press <kbd>?</kbd> for shortcuts.</div>`;
+}
+function renderStatus() {
+  const src = catalog.source === 'imported'
+    ? `Game data: <b>imported</b> (${catalog.spells.length} spells, ${catalog.enemies.length} creatures)`
+    : `Game data: <b>built-in reference</b> (approximate — <a href="#" data-act="import">import yours</a> for exact values)`;
+  const selN = ui.sel[ui.view]?.size;
+  $('#statusbar').innerHTML = `<span>${src}</span>${selN ? `<span><b>${selN}</b> selected</span>` : ''}<span style="margin-left:auto">${savedAt ? 'Autosaved ' + savedAt.toLocaleTimeString() : 'Autosave on'}</span>`;
+}
+
+// ───────────────────────── generic grid ─────────────────────────
+// cfg: { name, rows, cols, key(row), modified(row), rowClass(row), onEdit(col, rows, str), draggable, context(e,row) }
+function grid(cfg) {
+  const { name } = cfg;
+  const sort = ui.sort[name];
+  const col = cfg.cols.find((c) => c.key === sort.key) || cfg.cols[0];
+  const rows = [...cfg.rows].sort((a, b) => {
+    const va = col.sort ? col.sort(a) : col.get(a);
+    const vb = col.sort ? col.sort(b) : col.get(b);
+    if (typeof va === 'number' || typeof vb === 'number') return ((has(va) ? Number(va) : -1e9) - (has(vb) ? Number(vb) : -1e9)) * sort.dir;
+    return String(va ?? '').localeCompare(String(vb ?? '')) * sort.dir;
+  });
+  ui.visible[name] = rows.map(cfg.key);
+  const sel = ui.sel[name];
+  const head = cfg.cols.map((c) => `<th class="${c.num ? 'num' : ''}" data-sort="${c.key}" title="${esc(c.title || 'Sort')}">${esc(c.label)}${sort.key === c.key ? `<span class="arrow"> ${sort.dir > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('');
+  const body = rows.map((r) => {
+    const k = cfg.key(r);
+    const isSel = sel.has(k);
+    const tds = cfg.cols.map((c) => {
+      const cls = [c.num ? 'num' : '', c.dim ? 'dim' : '', c.editable ? 'editable' : '', c.isMod?.(r) ? 'edited' : ''].join(' ');
+      const content = c.html ? c.html(r) : esc(c.fmt ? c.fmt(c.get(r), r) : c.get(r) ?? '');
+      return `<td class="${cls}" data-col="${c.key}" title="${c.editable ? 'Double-click to edit (applies to all selected rows)' : ''}">${content}</td>`;
+    }).join('');
+    return `<tr data-key="${esc(k)}" class="${isSel ? 'sel' : ''} ${ui.cursor[name] === k ? 'cursor' : ''} ${cfg.rowClass?.(r) || ''}" ${isSel && cfg.draggable ? 'draggable="true"' : ''}>${tds}</tr>`;
+  }).join('');
+  const wrap = document.createElement('div');
+  wrap.className = 'view-body';
+  wrap.tabIndex = 0;
+  wrap.dataset.grid = name;
+  wrap.innerHTML = rows.length
+    ? `<table class="grid"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`
+    : `<div class="pad muted">${cfg.empty || 'Nothing matches the current filter.'}</div>`;
+  const rowByKey = new Map(rows.map((r) => [cfg.key(r), r]));
+  let painting = null;
+  let suppressClick = false;
+
+  wrap.addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-sort]');
+    if (th) {
+      const k = th.dataset.sort;
+      ui.sort[name] = { key: k, dir: sort.key === k ? -sort.dir : (cfg.cols.find((c) => c.key === k)?.num ? -1 : 1) };
+      render();
+      return;
+    }
+    const tr = e.target.closest('tr[data-key]');
+    if (!tr) { if (e.target === wrap || e.target.classList.contains('pad')) { sel.clear(); refreshSelection(name); } return; }
+    if (suppressClick) { suppressClick = false; return; }
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return; // handled on mousedown
+    selectOnly(name, tr.dataset.key);
+  });
+  wrap.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    const tr = e.target.closest('tr[data-key]');
+    if (!tr || e.target.closest('input')) return;
+    wrap.focus({ preventScroll: true });
+    const k = tr.dataset.key;
+    if (e.shiftKey || e.ctrlKey || e.metaKey) { e.preventDefault(); clickSelect(name, k, e); suppressClick = true; return; }
+    if (sel.has(k)) return; // may become a drag of the selection
+    e.preventDefault();
+    sel.clear(); sel.add(k); ui.anchor[name] = k; ui.cursor[name] = k;
+    painting = { start: k };
+    refreshSelection(name);
+    const move = (ev) => {
+      const t = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.('tr[data-key]');
+      if (!t || !wrap.contains(t)) return;
+      const vis = ui.visible[name];
+      const a = vis.indexOf(painting.start);
+      const b = vis.indexOf(t.dataset.key);
+      if (a < 0 || b < 0) return;
+      sel.clear();
+      for (let i = Math.min(a, b); i <= Math.max(a, b); i++) sel.add(vis[i]);
+      ui.cursor[name] = t.dataset.key;
+      if (a !== b) suppressClick = true;
+      refreshSelection(name);
+      autoScroll(wrap, ev.clientY);
+    };
+    const up = () => { painting = null; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+  wrap.addEventListener('dblclick', (e) => {
+    const td = e.target.closest('td[data-col]');
+    const tr = e.target.closest('tr[data-key]');
+    if (!td || !tr) return;
+    const c = cfg.cols.find((x) => x.key === td.dataset.col);
+    if (!c?.editable) { cfg.onOpen?.(rowByKey.get(tr.dataset.key)); return; }
+    const row = rowByKey.get(tr.dataset.key);
+    const targets = sel.has(tr.dataset.key) ? [...sel].map((k) => rowByKey.get(k)).filter(Boolean) : [row];
+    const input = document.createElement('input');
+    input.className = 'cell-edit';
+    input.value = fmtNum(c.get(row));
+    input.placeholder = targets.length > 1 ? `${targets.length} rows` : '';
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus(); input.select();
+    let done = false;
+    const commit = (ok) => {
+      if (done) return; done = true;
+      if (ok && input.value.trim() !== fmtNum(c.get(row))) cfg.onEdit(c, targets, input.value);
+      else render();
+    };
+    input.addEventListener('keydown', (ev) => {
+      ev.stopPropagation();
+      if (ev.key === 'Enter') commit(true);
+      if (ev.key === 'Escape') commit(false);
+    });
+    input.addEventListener('blur', () => commit(true));
+  });
+  wrap.addEventListener('contextmenu', (e) => {
+    const tr = e.target.closest('tr[data-key]');
+    if (!tr || !cfg.context) return;
+    e.preventDefault();
+    if (!sel.has(tr.dataset.key)) selectOnly(name, tr.dataset.key);
+    cfg.context(e, [...sel].map((k) => rowByKey.get(k)).filter(Boolean));
+  });
+  if (cfg.draggable) {
+    wrap.addEventListener('dragstart', (e) => {
+      const tr = e.target.closest('tr[data-key]');
+      if (!tr) return;
+      const ids = cfg.dragIds([...sel].map((k) => rowByKey.get(k)).filter(Boolean));
+      setDragData(e, { kind: 'spells', ids }, `${ids.length} spell${ids.length > 1 ? 's' : ''}`);
+    });
+  }
+  wrap.addEventListener('keydown', (e) => gridKeys(e, name, cfg, rowByKey));
+  return wrap;
+}
+function autoScroll(el, y) {
+  const r = el.getBoundingClientRect();
+  if (y < r.top + 30) el.scrollTop -= 12;
+  else if (y > r.bottom - 30) el.scrollTop += 12;
+}
+function selectOnly(name, k) {
+  const s = ui.sel[name];
+  s.clear(); s.add(k);
+  ui.anchor[name] = k; ui.cursor[name] = k;
+  refreshSelection(name);
+}
+function clickSelect(name, k, e) {
+  const s = ui.sel[name];
+  const vis = ui.visible[name] || [];
+  if (e.shiftKey && ui.anchor[name] != null && vis.includes(ui.anchor[name])) {
+    if (!(e.ctrlKey || e.metaKey)) s.clear();
+    const a = vis.indexOf(ui.anchor[name]);
+    const b = vis.indexOf(k);
+    for (let i = Math.min(a, b); i <= Math.max(a, b); i++) s.add(vis[i]);
+  } else if (e.ctrlKey || e.metaKey) {
+    if (s.has(k)) s.delete(k); else s.add(k);
+    ui.anchor[name] = k;
+  } else { s.clear(); s.add(k); ui.anchor[name] = k; }
+  ui.cursor[name] = k;
+  refreshSelection(name);
+}
+// Updates selection visuals without rebuilding the table (keeps scroll + is fast while painting).
+function refreshSelection(name) {
+  const s = ui.sel[name];
+  const draggable = $('#main .view-body')?.dataset.grid === name && ['spells', 'custom'].includes(name);
+  $$('#main tr[data-key]').forEach((tr) => {
+    const on = s.has(tr.dataset.key);
+    tr.classList.toggle('sel', on);
+    tr.classList.toggle('cursor', ui.cursor[name] === tr.dataset.key);
+    if (draggable) { if (on) tr.setAttribute('draggable', 'true'); else tr.removeAttribute('draggable'); }
+  });
+  const bar = $('#main .bulkbar');
+  if (bar) renderBulkbar(bar, name);
+  const insp = $('#inspector');
+  const top = insp.scrollTop;
+  insp.innerHTML = '';
+  ({ spells: inspectSpells, custom: inspectCustom, enemies: inspectEnemies })[name]?.(insp);
+  insp.scrollTop = top;
+  renderStatus();
+}
+function gridKeys(e, name, cfg, rowByKey) {
+  if (isTextTarget(e.target)) return;
+  const vis = ui.visible[name] || [];
+  const s = ui.sel[name];
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === 'a') { e.preventDefault(); vis.forEach((k) => s.add(k)); refreshSelection(name); return; }
+  if (e.key === 'Escape') { s.clear(); refreshSelection(name); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const i = vis.indexOf(ui.cursor[name]);
+    const n = Math.max(0, Math.min(vis.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)));
+    const k = vis[n];
+    if (!k) return;
+    if (e.shiftKey) { clickSelect(name, k, { shiftKey: true, ctrlKey: false }); } else selectOnly(name, k);
+    $(`#main tr[data-key="${CSS.escape(k)}"]`)?.scrollIntoView({ block: 'nearest' });
+    return;
+  }
+  if (e.key === 'Enter') { e.preventDefault(); $('#inspector input:not([type=checkbox]), #inspector select')?.focus(); return; }
+  const rows = [...s].map((k) => rowByKey.get(k)).filter(Boolean);
+  if (!rows.length) return;
+  if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); cfg.onDelete?.(rows); return; }
+  if (mod && e.key.toLowerCase() === 'c') { e.preventDefault(); cfg.onCopy?.(rows); return; }
+  if (mod && e.key.toLowerCase() === 'v') { e.preventDefault(); cfg.onPaste?.(rows); return; }
+  if (mod && e.key.toLowerCase() === 'd') { e.preventDefault(); cfg.onDuplicate?.(rows); }
+}
+
+// ───────────────────────── drag & drop plumbing ─────────────────────────
+const DND_TYPE = 'application/x-noita-forge';
+let currentDrag = null; // mirror of the payload (dataTransfer is unreadable during dragover)
+function setDragData(e, payload, label) {
+  currentDrag = payload;
+  e.dataTransfer.effectAllowed = 'copyMove';
+  e.dataTransfer.setData(DND_TYPE, JSON.stringify(payload));
+  e.dataTransfer.setData('text/plain', (payload.ids || []).join(','));
+  const ghost = document.createElement('div');
+  ghost.textContent = label;
+  ghost.style.cssText = 'position:fixed;top:-100px;left:0;padding:4px 10px;border-radius:6px;background:#8a4fd6;color:#fff;font:600 12px system-ui';
+  document.body.appendChild(ghost);
+  e.dataTransfer.setDragImage(ghost, 10, 10);
+  setTimeout(() => ghost.remove(), 0);
+}
+document.addEventListener('dragend', () => { currentDrag = null; $$('.drop-ok').forEach((x) => x.classList.remove('drop-ok')); $$('.insert-mark').forEach((x) => x.remove()); });
+
+// Nav items accept spells.
+$('#nav').addEventListener('dragover', (e) => {
+  const item = e.target.closest('.nav-item[data-drop]');
+  if (!item || currentDrag?.kind !== 'spells') return;
+  e.preventDefault();
+  $$('.nav-item.drop-ok').forEach((x) => x !== item && x.classList.remove('drop-ok'));
+  item.classList.add('drop-ok');
+});
+$('#nav').addEventListener('dragleave', (e) => e.target.closest?.('.nav-item')?.classList.remove('drop-ok'));
+$('#nav').addEventListener('drop', (e) => {
+  const item = e.target.closest('.nav-item[data-drop]');
+  if (!item || currentDrag?.kind !== 'spells') return;
+  e.preventDefault();
+  item.classList.remove('drop-ok');
+  const ids = currentDrag.ids;
+  const v = item.dataset.view;
+  if (v === 'loadout') {
+    mutate((p) => { p.loadout.spells = [...(p.loadout.spells || []), ...ids]; });
+    toast(`Added ${ids.length} spell(s) to the starting loadout`);
+  } else if (v === 'wands') {
+    mutate((p) => {
+      if (!p.customWands.length) p.customWands.push(newWand(p));
+      const w = p.customWands[p.customWands.length - 1];
+      w.spells = [...(w.spells || []), ...ids];
+    });
+    toast(`Added ${ids.length} spell(s) to wand "${project.customWands.at(-1).name}"`);
+  } else if (v === 'custom') {
+    cloneToCustom(ids.map((id) => SPELLS.get(id)).filter(Boolean));
+  }
+});
+$('#nav').addEventListener('click', (e) => {
+  const item = e.target.closest('.nav-item');
+  if (item) go(item.dataset.view);
+});
+function go(view) { ui.view = view; render(); }
+
+// Spell strips (wand slots, loadout) with reorder / cross-strip moves.
+const strips = new Map();
+function stripEl(id, ids, set, opts = {}) {
+  strips.set(id, { get: () => ids, set });
+  const el = document.createElement('div');
+  el.className = 'strip';
+  el.dataset.strip = id;
+  el.tabIndex = 0;
+  const sel = ui.slotSel.strip === id ? ui.slotSel.idxs : new Set();
+  el.innerHTML = ids.length
+    ? ids.map((sid, i) => {
+      const m = spellMeta(sid);
+      return `<span class="slot ${sel.has(i) ? 'sel' : ''}" draggable="true" data-i="${i}" title="${esc(sid)}"><i style="background:${typeByCode(m.type).color}"></i>${esc(m.name)}<span class="x" data-x="${i}" title="Remove">×</span></span>`;
+    }).join('')
+    : `<span class="placeholder">${esc(opts.placeholder || 'Drag spells here')}</span>`;
+  el.addEventListener('click', (e) => {
+    ui.activeStrip = id;
+    const x = e.target.closest('[data-x]');
+    if (x) { const i = Number(x.dataset.x); mutate(() => set(ids.filter((_, j) => j !== i))); ui.slotSel = { strip: null, idxs: new Set() }; return; }
+    const chip = e.target.closest('.slot');
+    if (!chip) { ui.slotSel = { strip: null, idxs: new Set() }; render(); return; }
+    const i = Number(chip.dataset.i);
+    const s = ui.slotSel.strip === id ? ui.slotSel.idxs : new Set();
+    if (e.shiftKey && ui.slotSel.strip === id && ui.slotSel.anchor != null) {
+      for (let j = Math.min(i, ui.slotSel.anchor); j <= Math.max(i, ui.slotSel.anchor); j++) s.add(j);
+    } else if (e.ctrlKey || e.metaKey) { if (s.has(i)) s.delete(i); else s.add(i); } else { s.clear(); s.add(i); }
+    ui.slotSel = { strip: id, idxs: s, anchor: e.shiftKey ? ui.slotSel.anchor : i };
+    render();
+    $(`[data-strip="${CSS.escape(id)}"]`)?.focus();
+  });
+  el.addEventListener('keydown', (e) => {
+    if (ui.slotSel.strip !== id) return;
+    const idxs = ui.slotSel.idxs;
+    if ((e.key === 'Delete' || e.key === 'Backspace') && idxs.size) {
+      e.preventDefault();
+      mutate(() => set(ids.filter((_, j) => !idxs.has(j))));
+      ui.slotSel = { strip: null, idxs: new Set() };
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+      e.preventDefault(); ui.slotSel = { strip: id, idxs: new Set(ids.map((_, j) => j)) }; render();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && idxs.size) {
+      e.preventDefault();
+      const dup = ids.filter((_, j) => idxs.has(j));
+      mutate(() => set([...ids, ...dup]));
+    }
+  });
+  el.addEventListener('dragstart', (e) => {
+    const chip = e.target.closest('.slot');
+    if (!chip) return;
+    const i = Number(chip.dataset.i);
+    if (!(ui.slotSel.strip === id && ui.slotSel.idxs.has(i))) ui.slotSel = { strip: id, idxs: new Set([i]), anchor: i };
+    const idxs = [...ui.slotSel.idxs].sort((a, b) => a - b);
+    setDragData(e, { kind: 'slots', strip: id, idxs, ids: idxs.map((j) => ids[j]) }, `${idxs.length} spell${idxs.length > 1 ? 's' : ''}`);
+  });
+  const indexAt = (e) => {
+    const chips = $$('.slot', el);
+    for (let i = 0; i < chips.length; i++) {
+      const r = chips[i].getBoundingClientRect();
+      if (e.clientY < r.top) return i;
+      if (e.clientY <= r.bottom && e.clientX < r.left + r.width / 2) return i;
+    }
+    return chips.length;
+  };
+  el.addEventListener('dragover', (e) => {
+    if (!currentDrag || !['spells', 'slots'].includes(currentDrag.kind)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = currentDrag.kind === 'slots' && !e.altKey ? 'move' : 'copy';
+    el.classList.add('drop-ok');
+    const idx = indexAt(e);
+    $$('.insert-mark').forEach((m) => m.remove());
+    const mark = document.createElement('span');
+    mark.className = 'insert-mark';
+    const chips = $$('.slot', el);
+    if (chips[idx]) el.insertBefore(mark, chips[idx]); else el.appendChild(mark);
+  });
+  el.addEventListener('dragleave', (e) => { if (!el.contains(e.relatedTarget)) { el.classList.remove('drop-ok'); $$('.insert-mark', el).forEach((m) => m.remove()); } });
+  el.addEventListener('drop', (e) => {
+    if (!currentDrag) return;
+    e.preventDefault();
+    const idx = indexAt(e);
+    const d = currentDrag;
+    currentDrag = null;
+    mutate(() => {
+      if (d.kind === 'spells') {
+        const next = [...ids]; next.splice(idx, 0, ...d.ids); set(next);
+      } else if (d.kind === 'slots') {
+        const copy = e.altKey;
+        if (d.strip === id && !copy) {
+          const moving = d.idxs.map((j) => ids[j]);
+          const rest = ids.filter((_, j) => !d.idxs.includes(j));
+          const at = idx - d.idxs.filter((j) => j < idx).length;
+          rest.splice(at, 0, ...moving);
+          set(rest);
+          ui.slotSel = { strip: id, idxs: new Set(moving.map((_, k) => at + k)) };
+        } else {
+          const src = strips.get(d.strip);
+          const next = [...ids]; next.splice(idx, 0, ...d.ids); set(next);
+          if (src && !copy) src.set(src.get().filter((_, j) => !d.idxs.includes(j)));
+          ui.slotSel = { strip: null, idxs: new Set() };
+        }
+      }
+    });
+  });
+  return el;
+}
+
+// Palette (in the inspector) — searchable spell list to drag from.
+function paletteEl(title, hint) {
+  const wrap = document.createElement('div');
+  wrap.className = 'palette';
+  const P = ui.palette;
+  const q = P.q.toLowerCase();
+  const list = allPaletteSpells().filter((s) => (!P.types.size || P.types.has(s.type))
+    && (!q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)));
+  wrap.innerHTML = `<h3>${esc(title)}</h3><div class="sub">${esc(hint)}</div>
+    <input type="search" placeholder="Search spells…" data-fid="palette-q" value="${esc(P.q)}">
+    <div class="chips">${SPELL_TYPES.map((t) => `<span class="chip ${P.types.has(t.code) ? 'on' : ''}" data-t="${t.code}"><span class="dot" style="background:${t.color}"></span>${t.label}</span>`).join('')}</div>
+    <div class="list" data-palette="1">${list.map((s) => `<span class="slot ${P.sel.has(s.id) ? 'sel' : ''}" draggable="true" data-id="${esc(s.id)}" title="${esc(s.id)}${s.custom ? ' (custom)' : ''}"><i style="background:${typeByCode(s.type).color}"></i>${esc(s.name)}</span>`).join('') || '<span class="muted">No spells</span>'}</div>`;
+  $('input', wrap).addEventListener('input', (e) => { P.q = e.target.value; render(); });
+  wrap.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip[data-t]');
+    if (chip) { const t = Number(chip.dataset.t); if (P.types.has(t)) P.types.delete(t); else P.types.add(t); render(); return; }
+    const s = e.target.closest('.slot[data-id]');
+    if (!s) return;
+    if (e.ctrlKey || e.metaKey) { if (P.sel.has(s.dataset.id)) P.sel.delete(s.dataset.id); else P.sel.add(s.dataset.id); } else { P.sel.clear(); P.sel.add(s.dataset.id); }
+    render();
+  });
+  wrap.addEventListener('dblclick', (e) => {
+    const s = e.target.closest('.slot[data-id]');
+    if (!s) return;
+    const target = strips.get(ui.activeStrip) || strips.values().next().value;
+    if (!target) return toast('Create a wand first');
+    mutate(() => target.set([...target.get(), s.dataset.id]));
+  });
+  wrap.addEventListener('dragstart', (e) => {
+    const s = e.target.closest('.slot[data-id]');
+    if (!s) return;
+    if (!P.sel.has(s.dataset.id)) { P.sel.clear(); P.sel.add(s.dataset.id); }
+    const ids = [...P.sel];
+    setDragData(e, { kind: 'spells', ids }, `${ids.length} spell${ids.length > 1 ? 's' : ''}`);
+  });
+  // Dropping slots back onto the palette removes them.
+  wrap.addEventListener('dragover', (e) => { if (currentDrag?.kind === 'slots') { e.preventDefault(); wrap.classList.add('drop-ok'); } });
+  wrap.addEventListener('dragleave', () => wrap.classList.remove('drop-ok'));
+  wrap.addEventListener('drop', (e) => {
+    if (currentDrag?.kind !== 'slots') return;
+    e.preventDefault();
+    const d = currentDrag;
+    const src = strips.get(d.strip);
+    if (src) mutate(() => src.set(src.get().filter((_, j) => !d.idxs.includes(j))));
+    ui.slotSel = { strip: null, idxs: new Set() };
+  });
+  return wrap;
+}
+
+// ───────────────────────── inspector field rows ─────────────────────────
+// opts: { label, items, get(item), base(item), isMod(item), set(p, item, value|undefined), kind, options, list, step, hint, fid }
+function fieldRow(o) {
+  const vals = o.items.map(o.get);
+  const same = vals.every((v) => String(v ?? '') === String(vals[0] ?? ''));
+  const mod = o.items.some((it) => o.isMod?.(it));
+  const row = document.createElement('div');
+  row.className = 'field' + (mod ? ' mod' : '') + (o.kind === 'textarea' ? ' wide' : '');
+  const base = o.base && o.items.length === 1 ? o.base(o.items[0]) : undefined;
+  const hint = [o.hint, mod && has(base) ? `Vanilla: ${o.kind === 'bool' ? (base ? 'yes' : 'no') : base}` : ''].filter(Boolean).join(' · ');
+  const label = `<label class="${o.kind === 'num' || !o.kind ? 'scrub' : ''}" title="${esc(o.label)}${o.kind === 'num' || !o.kind ? ' — drag left/right to adjust' : ''}">${esc(o.label)}</label>`;
+  let input;
+  const fid = o.fid || 'f-' + o.label;
+  if (o.kind === 'bool') {
+    const v = same ? !!vals[0] : false;
+    input = `<span><input type="checkbox" data-fid="${esc(fid)}" ${v ? 'checked' : ''}> ${same ? '' : '<span class="muted">mixed</span>'}</span>`;
+  } else if (o.kind === 'select') {
+    input = `<select data-fid="${esc(fid)}">${same ? '' : '<option value="" selected>— mixed —</option>'}${o.options.map(([v, l]) => `<option value="${esc(v)}" ${same && String(vals[0]) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  } else if (o.kind === 'textarea') {
+    input = `<textarea rows="5" data-fid="${esc(fid)}" placeholder="${same ? '' : 'mixed'}" spellcheck="false">${same ? esc(vals[0] ?? '') : ''}</textarea>`;
+  } else {
+    const listAttr = o.list ? `list="dl-${o.list}"` : '';
+    input = `<input ${listAttr} data-fid="${esc(fid)}" value="${same ? esc(o.kind === 'text' ? vals[0] ?? '' : fmtNum(vals[0])) : ''}" placeholder="${same ? (has(base) ? fmtNum(base) : '') : 'mixed'}" title="${o.kind === 'text' ? '' : 'Number, or relative: *2  /2  +=5  -=5  150%. Empty = vanilla.'}" spellcheck="false">`;
+  }
+  row.innerHTML = `${o.kind === 'textarea' ? `<div class="row">${label}<button class="reset" title="Reset to vanilla">↺</button></div>` : label}${input}${o.kind === 'textarea' ? '' : '<button class="reset" title="Reset to vanilla">↺</button>'}${hint ? `<div class="hint">${esc(hint)}</div>` : ''}`;
+  const el = $('input,select,textarea', row);
+  const commit = (raw) => {
+    if (o.kind === 'bool') return mutate((p) => o.items.forEach((it) => o.set(p, it, raw)));
+    if (o.kind === 'select') { if (raw === '') return; return mutate((p) => o.items.forEach((it) => o.set(p, it, o.numeric ? Number(raw) : raw))); }
+    if (o.kind === 'text' || o.kind === 'textarea') return mutate((p) => o.items.forEach((it) => o.set(p, it, raw === '' ? undefined : raw)));
+    if (raw.trim() === '') return mutate((p) => o.items.forEach((it) => o.set(p, it, undefined)));
+    const bad = [];
+    const next = o.items.map((it) => {
+      const cur = o.get(it) ?? o.base?.(it) ?? 0;
+      let v = parseNumInput(raw, cur);
+      if (Number.isNaN(v)) bad.push(it);
+      if (o.int) v = Math.round(v);
+      if (o.min != null) v = Math.max(o.min, v);
+      return Math.round(v * 1000) / 1000;
+    });
+    if (bad.length) { toast(`"${raw}" is not a number or expression (try 12, *2, +=5, 150%)`, true); render(); return; }
+    mutate((p) => o.items.forEach((it, i) => o.set(p, it, next[i])));
+  };
+  if (o.kind === 'bool') el.addEventListener('change', () => commit(el.checked));
+  else if (o.kind === 'textarea') el.addEventListener('change', () => commit(el.value));
+  else {
+    el.addEventListener('change', () => commit(el.value));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Escape') { e.preventDefault(); render(); }
+      if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && (o.kind === 'num' || !o.kind)) {
+        e.preventDefault();
+        const step = (o.step || 1) * (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1);
+        mutate((p) => o.items.forEach((it) => o.set(p, it, Math.round(((Number(o.get(it) ?? o.base?.(it)) || 0) + step) * 1000) / 1000)), 'arrow-' + fid);
+      }
+    });
+  }
+  $$('.reset', row).forEach((b) => b.addEventListener('click', () => mutate((p) => o.items.forEach((it) => o.set(p, it, undefined)))));
+  const lab = $('label.scrub', row);
+  if (lab) {
+    lab.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const x0 = e.clientX;
+      const starts = o.items.map((it) => Number(o.get(it) ?? o.base?.(it)) || 0);
+      const step = o.step || (Math.abs(starts[0]) >= 50 ? 1 : Math.abs(starts[0]) >= 2 ? 0.5 : 0.05);
+      const key = 'scrub-' + fid + Date.now();
+      let last = 0;
+      const move = (ev) => {
+        const d = Math.round((ev.clientX - x0) / 4) * step;
+        if (d === last) return;
+        last = d;
+        mutate((p) => o.items.forEach((it, i) => {
+          let v = Math.round((starts[i] + d) * 1000) / 1000;
+          if (o.int) v = Math.round(v);
+          if (o.min != null) v = Math.max(o.min, v);
+          o.set(p, it, v);
+        }), key);
+      };
+      const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); document.body.style.cursor = ''; };
+      document.body.style.cursor = 'ew-resize';
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+  }
+  return row;
+}
+const groupTitle = (t) => { const d = document.createElement('div'); d.className = 'group-title'; d.textContent = t; return d; };
+function inspHead(insp, title, sub) {
+  insp.insertAdjacentHTML('beforeend', `<h3>${esc(title)}</h3><div class="sub">${esc(sub || '')}</div>`);
+}
+function buttons(container, defs) {
+  const row = document.createElement('div');
+  row.className = 'row mt';
+  for (const [label, fn, cls] of defs) {
+    const b = document.createElement('button');
+    b.textContent = label; b.className = 'small ' + (cls || '');
+    b.addEventListener('click', fn);
+    row.appendChild(b);
+  }
+  container.appendChild(row);
+  return row;
+}
+
+// Spawn probability editor: drag across bars to paint, inputs accept expressions.
+function spawnEditor(items, getSpawn, setSpawn) {
+  const box = document.createElement('div');
+  const tiers = [...Array(MAX_TIER + 1).keys()];
+  const vals = tiers.map((t) => items.map((it) => Number(getSpawn(it)[t] ?? 0)));
+  const scale = Math.max(1, ...vals.flat());
+  box.innerHTML = `<div class="tierbox">${tiers.map((t, i) => {
+    const v = vals[i];
+    const same = v.every((x) => x === v[0]);
+    const h = same ? (v[0] / scale) * 100 : (Math.max(...v) / scale) * 100;
+    return `<div class="tier"><div class="bar ${same ? '' : 'mixed'}" data-t="${t}" title="Tier ${t}: drag up/down (or across tiers) to paint"><span style="height:${h}%"></span></div><input data-t="${t}" data-fid="spawn-${t}" value="${same ? fmtNum(v[0]) : ''}" placeholder="${same ? '' : '~'}"><small>${t}</small></div>`;
+  }).join('')}</div><div class="hint muted" style="font-size:11px;margin-top:4px">Tier ≈ depth: 0 Mines … 6 Temple of the art, 10 = deep/NG+. Paint bars with the mouse.</div>`;
+  const apply = (p, t, fn) => items.forEach((it) => {
+    const sp = { ...getSpawn(it) };
+    const v = Math.max(0, Math.round(fn(Number(sp[t] ?? 0)) * 1000) / 1000);
+    if (v > 0) sp[t] = v; else delete sp[t];
+    setSpawn(p, it, sp);
+  });
+  $$('input[data-t]', box).forEach((inp) => inp.addEventListener('change', () => {
+    const t = Number(inp.dataset.t);
+    if (inp.value.trim() === '') return;
+    const test = parseNumInput(inp.value, 1);
+    if (Number.isNaN(test)) return toast('Not a number', true);
+    mutate((p) => apply(p, t, (cur) => parseNumInput(inp.value, cur)));
+  }));
+  box.addEventListener('mousedown', (e) => {
+    const bar = e.target.closest('.bar');
+    if (!bar) return;
+    e.preventDefault();
+    const key = 'paint' + Date.now();
+    const paint = (ev) => {
+      const b = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.('.bar[data-t]');
+      if (!b) return;
+      const r = b.getBoundingClientRect();
+      const frac = Math.max(0, Math.min(1, (r.bottom - ev.clientY) / r.height));
+      const v = Math.round(frac * scale * 20) / 20;
+      mutate((p) => apply(p, Number(b.dataset.t), () => v), key);
+    };
+    paint(e);
+    const up = () => { document.removeEventListener('mousemove', paint); document.removeEventListener('mouseup', up); };
+    document.addEventListener('mousemove', paint);
+    document.addEventListener('mouseup', up);
+  });
+  return box;
+}
+function sparkHtml(sp, off) {
+  const max = Math.max(1, ...Object.values(sp));
+  return `<span class="spark ${off ? 'off' : ''}">${[...Array(MAX_TIER + 1).keys()].map((t) => {
+    const v = Number(sp[t] || 0);
+    return v > 0 ? `<b style="height:${Math.max(2, (v / max) * 14)}px" title="tier ${t}: ${v}"></b>` : '<b class="z"></b>';
+  }).join('')}</span>`;
+}
+
+// ───────────────────────── Spells view ─────────────────────────
+function viewHead(main, title, extra = '') {
+  const head = document.createElement('div');
+  head.className = 'view-head';
+  head.innerHTML = `<h2>${esc(title)}</h2>${extra}`;
+  main.appendChild(head);
+  return head;
+}
+function viewSpells(main, insp) {
+  const F = ui.filter.spells;
+  const head = viewHead(main, 'Spells', `<input type="search" class="search" placeholder="Search name or ID…  ( / )" data-fid="spells-q" value="${esc(F.q)}">
+    <div class="chips">${SPELL_TYPES.map((t) => `<span class="chip ${F.types.has(t.code) ? 'on' : ''}" data-t="${t.code}"><span class="dot" style="background:${t.color}"></span>${t.label}</span>`).join('')}</div>
+    <label class="chip ${F.modified ? 'on' : ''}"><input type="checkbox" ${F.modified ? 'checked' : ''} data-mod hidden>Modified only</label>`);
+  $('input[type=search]', head).addEventListener('input', (e) => { F.q = e.target.value; render(); });
+  head.addEventListener('click', (e) => {
+    const c = e.target.closest('.chip[data-t]');
+    if (c) { const t = Number(c.dataset.t); if (F.types.has(t)) F.types.delete(t); else F.types.add(t); render(); }
+  });
+  $('[data-mod]', head).addEventListener('change', (e) => { F.modified = e.target.checked; render(); });
+  const bar = document.createElement('div');
+  bar.className = 'bulkbar';
+  main.appendChild(bar);
+  const q = F.q.toLowerCase();
+  const rows = catalog.spells.filter((s) => (!F.types.size || F.types.has(s.type)) && (!F.modified || spellModified(s))
+    && (!q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)));
+  const numCol = (fk, label, extra = {}) => {
+    const f = SPELL_FIELD[fk];
+    return { key: fk, label, num: true, editable: true, get: (s) => spellGet(s, f), isMod: (s) => spellIsMod(s, f), fmt: f.fmt ? (v) => (has(v) ? f.fmt(v) : '') : (v) => fmtNum(v), field: f, ...extra };
+  };
+  const cols = [
+    { key: 'name', label: 'Name', get: (s) => s.name, html: (s) => `${spellModified(s) ? '<span class="moddot" title="Modified">● </span>' : ''}<span class="${sEdit(s.id).disabled ? 'off' : ''}">${esc(s.name)}</span>` },
+    { key: 'id', label: 'ID', get: (s) => s.id, dim: true },
+    { key: 'type', label: 'Type', get: (s) => typeByCode(s.type).label, html: (s) => { const t = typeByCode(s.type); return `<span class="typetag"><i style="background:${t.color}"></i>${t.label}</span>`; } },
+    numCol('mana', 'Mana'), numCol('max_uses', 'Uses'), numCol('fire_rate_wait', 'Cast delay'), numCol('reload', 'Recharge'),
+    numCol('spread', 'Spread'), numCol('d_damage', '+Dmg'), numCol('proj_damage', 'Proj. dmg'), numCol('price', 'Price'),
+    { key: 'spawn', label: 'Spawn by tier', get: (s) => Object.values(spellSpawn(s)).reduce((a, b) => a + b, 0), sort: (s) => (sEdit(s.id).disabled ? 0 : Object.values(spellSpawn(s)).reduce((a, b) => a + b, 0)), html: (s) => sparkHtml(spellSpawn(s), sEdit(s.id).disabled), num: false },
+  ];
+  main.appendChild(grid({
+    name: 'spells', rows, cols, key: (s) => s.id, draggable: true, dragIds: (rs) => rs.map((s) => s.id),
+    onEdit: (c, targets, str) => editSpellsNumeric(targets, c.field, str),
+    onDelete: (rs) => { mutate((p) => rs.forEach((s) => delete p.spellEdits[s.id])); toast(`Reset ${rs.length} spell(s) to vanilla`); },
+    onCopy: (rs) => copyEdits('spell', project.spellEdits[rs[0].id]),
+    onPaste: (rs) => pasteEdits('spell', rs, (p, s, e) => { p.spellEdits[s.id] = clone(e); }),
+    onDuplicate: (rs) => cloneToCustom(rs),
+    context: (e, rs) => spellContext(e, rs),
+    empty: 'No spells match. Clear the search or filters.',
+  }));
+  renderBulkbar(bar, 'spells');
+  inspectSpells(insp);
+}
+function editSpellsNumeric(targets, f, str) {
+  if (str.trim() === '') return mutate((p) => targets.forEach((s) => spellSet(p, s, f, undefined)));
+  const vals = targets.map((s) => parseNumInput(str, spellGet(s, f) ?? 0));
+  if (vals.some(Number.isNaN)) { toast('Not a number or expression', true); return render(); }
+  mutate((p) => targets.forEach((s, i) => spellSet(p, s, f, Math.round(vals[i] * 1000) / 1000)));
+}
+function selectedSpells() { return [...ui.sel.spells].map((id) => SPELLS.get(id)).filter(Boolean); }
+function renderBulkbar(bar, name) {
+  const n = ui.sel[name].size;
+  bar.classList.toggle('idle', !n);
+  if (!n) {
+    bar.innerHTML = '<span class="muted">Click, Shift/Ctrl+click or drag down the list to select · right-click for actions · double-click a number to edit</span>';
+    return;
+  }
+  bar.innerHTML = `<span class="count">${n} selected</span>`;
+  const defs = {
+    spells: [
+      ['Multiply…', () => multiplyDialog(selectedSpells())],
+      ['Disable spawning', () => mutate((p) => selectedSpells().forEach((s) => { (p.spellEdits[s.id] ||= {}).disabled = true; }))],
+      ['Enable spawning', () => mutate((p) => selectedSpells().forEach((s) => { if (p.spellEdits[s.id]) delete p.spellEdits[s.id].disabled; }))],
+      ['Add to loadout', () => { mutate((p) => { p.loadout.spells = [...(p.loadout.spells || []), ...selectedSpells().map((s) => s.id)]; }); toast('Added to starting loadout'); }],
+      ['Clone as custom', () => cloneToCustom(selectedSpells())],
+      ['Reset to vanilla', () => mutate((p) => selectedSpells().forEach((s) => delete p.spellEdits[s.id])), 'danger'],
+    ],
+    custom: [
+      ['Duplicate', () => duplicateCustom(selectedCustom())],
+      ['Add to loadout', () => { mutate((p) => { p.loadout.spells = [...(p.loadout.spells || []), ...selectedCustom().map((c) => sanitizeSpellId(c.id))]; }); toast('Added to starting loadout'); }],
+      ['Delete', () => deleteCustom(selectedCustom()), 'danger'],
+    ],
+    enemies: [
+      ['Multiply HP…', () => enemyMultiplyDialog(selectedEnemies())],
+      ['Make friendly', () => mutate((p) => selectedEnemies().forEach((en) => { (p.enemyEdits[en.file] ||= {}).herd_id = 'player'; }))],
+      ['Reset to vanilla', () => mutate((p) => selectedEnemies().forEach((en) => delete p.enemyEdits[en.file])), 'danger'],
+    ],
+  }[name] || [];
+  for (const [label, fn, cls] of defs) {
+    const b = document.createElement('button');
+    b.className = 'small ' + (cls || ''); b.textContent = label;
+    b.addEventListener('click', fn);
+    bar.appendChild(b);
+  }
+  const clear = document.createElement('button');
+  clear.className = 'small ghost'; clear.textContent = 'Clear selection (Esc)';
+  clear.addEventListener('click', () => { ui.sel[name].clear(); refreshSelection(name); });
+  bar.appendChild(clear);
+}
+function inspectSpells(insp) {
+  const items = selectedSpells();
+  if (!items.length) {
+    insp.innerHTML = `<div class="empty"><p><b>Select spells to edit them.</b></p><p>Click, <kbd>Shift</kbd>+click, <kbd>Ctrl</kbd>+click, or drag down the list to select many. Edits apply to every selected spell.</p><p>Number fields accept expressions:<br><code>*2</code> <code>/2</code> <code>+=5</code> <code>-=5</code> <code>150%</code></p><p>Drag a field's label left/right to scrub its value.</p></div>`;
+    return;
+  }
+  inspHead(insp, items.length === 1 ? items[0].name : `${items.length} spells`, items.length === 1 ? `${items[0].id} · ${typeByCode(items[0].type).label}` : items.slice(0, 6).map((s) => s.name).join(', ') + (items.length > 6 ? '…' : ''));
+  if (items.length === 1 && items[0].description) insp.insertAdjacentHTML('beforeend', `<div class="note">${esc(items[0].description)}</div>`);
+  let group = '';
+  const anyProj = items.some((s) => s.projectile);
+  for (const f of SPELL_FIELDS) {
+    if (f.proj && !anyProj) continue;
+    if (f.group !== group) {
+      group = f.group;
+      insp.appendChild(groupTitle(group));
+      if (f.proj) {
+        const files = [...new Set(items.map((s) => s.projectile).filter(Boolean))];
+        insp.insertAdjacentHTML('beforeend', `<div class="note">Edits the projectile file directly${files.length === 1 ? `: <code>${esc(files[0])}</code>` : ` (${files.length} files)`}. Enemies or other spells that shoot the same file are affected too.</div>`);
+      }
+    }
+    const its = f.proj ? items.filter((s) => s.projectile) : items;
+    insp.appendChild(fieldRow({
+      label: f.label, items: its, kind: 'num', step: f.step, hint: f.hint, fid: 'sp-' + f.key,
+      get: (s) => spellGet(s, f), base: (s) => (f.delta ? s[f.key] : spellBase(s, f)), isMod: (s) => spellIsMod(s, f),
+      set: (p, s, v) => spellSet(p, s, f, v),
+    }));
+  }
+  insp.appendChild(groupTitle('Spawning'));
+  insp.appendChild(fieldRow({
+    label: 'Never spawns (disable)', kind: 'bool', items, fid: 'sp-disabled',
+    get: (s) => !!sEdit(s.id).disabled, isMod: (s) => !!sEdit(s.id).disabled,
+    set: (p, s, v) => { (p.spellEdits[s.id] ||= {}).disabled = v || undefined; },
+  }));
+  insp.appendChild(spawnEditor(items, spellSpawn, (p, s, sp) => { (p.spellEdits[s.id] ||= {}).spawn = sp; }));
+  buttons(insp, [
+    ['×0.5', () => mutate((p) => items.forEach((s) => { (p.spellEdits[s.id] ||= {}).spawn = scaleSpawn(spellSpawn(s), 0.5); }))],
+    ['×2', () => mutate((p) => items.forEach((s) => { (p.spellEdits[s.id] ||= {}).spawn = scaleSpawn(spellSpawn(s), 2); }))],
+    ['All tiers', () => mutate((p) => items.forEach((s) => { const v = Math.max(0.1, ...Object.values(spellSpawn(s))); (p.spellEdits[s.id] ||= {}).spawn = Object.fromEntries([...Array(MAX_TIER + 1).keys()].map((t) => [t, v])); }))],
+    ['Reset spawn', () => mutate((p) => items.forEach((s) => { if (p.spellEdits[s.id]) delete p.spellEdits[s.id].spawn; }))],
+  ]);
+  insp.appendChild(groupTitle('Actions'));
+  buttons(insp, [
+    ['Copy edits (Ctrl+C)', () => copyEdits('spell', project.spellEdits[items[0].id])],
+    ['Paste (Ctrl+V)', () => pasteEdits('spell', items, (p, s, e) => { p.spellEdits[s.id] = clone(e); })],
+    ['Clone as custom spell', () => cloneToCustom(items)],
+    ['Reset', () => mutate((p) => items.forEach((s) => delete p.spellEdits[s.id])), 'danger'],
+  ]);
+}
+const scaleSpawn = (sp, m) => Object.fromEntries(Object.entries(sp).map(([t, v]) => [t, Math.round(v * m * 1000) / 1000]).filter(([, v]) => v > 0));
+
+function spellContext(e, rs) {
+  ctxMenu(e, [
+    [`Edit ${rs.length > 1 ? rs.length + ' spells' : rs[0].name}`, () => $('#inspector input')?.focus(), 'Enter'],
+    ['Multiply stats…', () => multiplyDialog(rs)],
+    null,
+    ['Copy edits', () => copyEdits('spell', project.spellEdits[rs[0].id]), 'Ctrl+C'],
+    ['Paste edits', () => pasteEdits('spell', rs, (p, s, ed) => { p.spellEdits[s.id] = clone(ed); }), 'Ctrl+V'],
+    null,
+    ['Disable spawning', () => mutate((p) => rs.forEach((s) => { (p.spellEdits[s.id] ||= {}).disabled = true; }))],
+    ['Add to starting loadout', () => mutate((p) => { p.loadout.spells = [...(p.loadout.spells || []), ...rs.map((s) => s.id)]; })],
+    ['Add to new wand', () => { mutate((p) => { const w = newWand(p); w.spells = rs.map((s) => s.id); p.customWands.push(w); }); toast('Wand created — see Wands'); }],
+    ['Clone as custom spell', () => cloneToCustom(rs), 'Ctrl+D'],
+    null,
+    ['Reset to vanilla', () => mutate((p) => rs.forEach((s) => delete p.spellEdits[s.id])), 'Del'],
+  ]);
+}
+function multiplyDialog(spells) {
+  if (!spells.length) return;
+  const opts = SPELL_FIELDS.filter((f) => !f.proj || spells.some((s) => s.projectile));
+  modal(`<h2>Multiply stats of ${spells.length} spell(s)</h2>
+    <p class="muted">Each spell's current value is multiplied individually. Use the inspector for <code>+=</code>, <code>/</code> or absolute values.</p>
+    <div class="row"><select id="mf">${opts.map((f) => `<option value="${f.key}">${esc(f.label)}</option>`).join('')}<option value="__spawn">Spawn chance (all tiers)</option></select>
+    × <input id="mv" value="2" style="width:80px"></div>
+    <div class="actions"><button data-close>Cancel</button><button class="primary" id="mok">Apply</button></div>`);
+  $('#mv').select();
+  const ok = () => {
+    const k = $('#mf').value;
+    const m = Number($('#mv').value);
+    if (Number.isNaN(m)) return toast('Enter a number', true);
+    closeModal();
+    if (k === '__spawn') return mutate((p) => spells.forEach((s) => { (p.spellEdits[s.id] ||= {}).spawn = scaleSpawn(spellSpawn(s), m); }));
+    const f = SPELL_FIELD[k];
+    mutate((p) => spells.forEach((s) => { const cur = spellGet(s, f); if (has(cur)) spellSet(p, s, f, Math.round(Number(cur) * m * 1000) / 1000); }));
+  };
+  $('#mok').addEventListener('click', ok);
+  $('#mv').addEventListener('keydown', (e) => e.key === 'Enter' && ok());
+}
+function copyEdits(kind, edits) {
+  ui.clipboard = { kind, edits: clone(edits || {}) };
+  toast(edits ? 'Copied edits — select other rows and press Ctrl+V' : 'Copied (no edits on this row)');
+}
+function pasteEdits(kind, rows, apply) {
+  if (!ui.clipboard || ui.clipboard.kind !== kind) return toast('Nothing to paste — copy a row first (Ctrl+C)', true);
+  mutate((p) => rows.forEach((r) => apply(p, r, ui.clipboard.edits)));
+  toast(`Pasted onto ${rows.length} row(s)`);
+}
+
+// ───────────────────────── Custom spells ─────────────────────────
+function newCustomSpell(p, from) {
+  let n = p.customSpells.length + 1;
+  const ids = new Set(p.customSpells.map((c) => sanitizeSpellId(c.id)));
+  while (ids.has(`MY_SPELL_${n}`)) n++;
+  return {
+    uid: uid(), id: `MY_SPELL_${n}`, name: `My spell ${n}`, description: 'A custom spell', type: 0, mana: 10, max_uses: -1, price: 100,
+    spawn: { 0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1 }, projBase: 'data/entities/projectiles/deck/light_bullet.xml', projCount: 1,
+    trigger: 'none', triggerDraws: 1, triggerDelay: 10, fire_rate_wait: 0, reload: 0, spread: 0, damage_add: 0, speed_mult: 1,
+    bounces: 0, lifetime_add: 0, explosion_radius: 0, crit_chance: 0, extra_entities: '', draw: '', proj: {}, rawLua: '', sprite: '', spriteData: '',
+    ...(from || {}),
+  };
+}
+function cloneToCustom(spells) {
+  if (!spells.length) return;
+  ui.sel.custom = new Set();
+  mutate((p) => {
+    for (const s of spells) {
+      const e = sEdit(s.id);
+      const ids = new Set([...p.customSpells.map((c) => sanitizeSpellId(c.id)), ...SPELLS.keys()]);
+      let id = `${s.id}_CUSTOM`;
+      let i = 2;
+      while (ids.has(id)) id = `${s.id}_CUSTOM_${i++}`;
+      const c = newCustomSpell(p, {
+        id, name: `${s.name} (custom)`, description: s.description || '', type: s.type,
+        mana: e.mana ?? s.mana, max_uses: e.max_uses ?? s.max_uses, price: e.price ?? s.price, spawn: clone(spellSpawn(s)),
+        projBase: s.projectile || '', fire_rate_wait: (s.fire_rate_wait || 0) + (e.d_fire_rate_wait || 0),
+        reload: (s.reload || 0) + (e.d_reload || 0), spread: (s.spread || 0) + (e.d_spread || 0),
+        damage_add: e.d_damage || 0, speed_mult: e.speed_mult ?? 1, proj: clone(e.proj || {}), sprite: s.sprite || '',
+        draw: s.type === 3 ? 2 : '',
+      });
+      p.customSpells.push(c);
+      ui.sel.custom.add(c.uid);
+    }
+  });
+  ui.view = 'custom';
+  render();
+  toast(`Created ${spells.length} custom spell(s). Edit them here.`);
+}
+const selectedCustom = () => project.customSpells.filter((c) => ui.sel.custom.has(c.uid));
+function duplicateCustom(cs) {
+  mutate((p) => {
+    ui.sel.custom.clear();
+    for (const c of cs) {
+      const d = { ...clone(c), uid: uid(), id: sanitizeSpellId(c.id) + '_COPY', name: c.name + ' (copy)' };
+      p.customSpells.push(d);
+      ui.sel.custom.add(d.uid);
+    }
+  });
+}
+function deleteCustom(cs) {
+  if (!cs.length) return;
+  const ids = new Set(cs.map((c) => c.uid));
+  mutate((p) => { p.customSpells = p.customSpells.filter((c) => !ids.has(c.uid)); });
+  ui.sel.custom.clear();
+  render();
+  toast(`Deleted ${cs.length} custom spell(s)`, false, undo);
+}
+const CUSTOM_FIELDS = [
+  { k: 'id', label: 'Spell ID', kind: 'text', group: 'Identity', hint: 'Unique, UPPER_CASE. Used by wands and other mods.' },
+  { k: 'name', label: 'Name', kind: 'text', group: 'Identity' },
+  { k: 'description', label: 'Description', kind: 'text', group: 'Identity' },
+  { k: 'type', label: 'Type', kind: 'select', numeric: true, options: SPELL_TYPES.map((t) => [t.code, t.label]), group: 'Identity' },
+  { k: 'mana', label: 'Mana cost', group: 'Casting' },
+  { k: 'max_uses', label: 'Max uses (-1 = ∞)', group: 'Casting', int: true },
+  { k: 'price', label: 'Shop price', group: 'Casting', step: 10 },
+  { k: 'fire_rate_wait', label: 'Cast delay (+frames)', group: 'Casting' },
+  { k: 'reload', label: 'Recharge (+frames)', group: 'Casting' },
+  { k: 'spread', label: 'Spread (+degrees)', group: 'Casting' },
+  { k: 'damage_add', label: 'Bonus damage (hp)', group: 'Casting' },
+  { k: 'speed_mult', label: 'Projectile speed ×', group: 'Casting', step: 0.05 },
+  { k: 'bounces', label: 'Extra bounces', group: 'Casting', int: true },
+  { k: 'lifetime_add', label: 'Lifetime (+frames)', group: 'Casting' },
+  { k: 'explosion_radius', label: 'Explosion radius (+)', group: 'Casting' },
+  { k: 'crit_chance', label: 'Crit chance (+%)', group: 'Casting' },
+  { k: 'draw', label: 'Draws extra spells', group: 'Casting', int: true, hint: 'Modifiers usually draw 1, multicasts 2+. Empty = default.' },
+  { k: 'extra_entities', label: 'Extra entities (comma list)', kind: 'text', list: 'extras', group: 'Casting', hint: 'Entity files attached to every projectile, e.g. homing.' },
+  { k: 'projBase', label: 'Projectile file', kind: 'text', list: 'projectiles', group: 'Projectile' },
+  { k: 'projCount', label: 'Projectiles per cast', group: 'Projectile', int: true, min: 1 },
+  { k: 'trigger', label: 'Trigger', kind: 'select', options: [['none', 'None'], ['hit', 'On hit (trigger)'], ['timer', 'After time (timer)'], ['death', 'On expire (death trigger)']], group: 'Projectile' },
+  { k: 'triggerDraws', label: 'Trigger payload spells', group: 'Projectile', int: true, min: 1 },
+  { k: 'triggerDelay', label: 'Timer delay (frames)', group: 'Projectile', int: true, min: 1 },
+];
+function viewCustom(main, insp) {
+  const F = ui.filter.custom;
+  const head = viewHead(main, 'Custom spells', `<input type="search" class="search" placeholder="Search…" data-fid="custom-q" value="${esc(F.q)}"><span class="spacer"></span><button id="new-spell" class="primary small">+ New spell</button>`);
+  $('input', head).addEventListener('input', (e) => { F.q = e.target.value; render(); });
+  $('#new-spell', head).addEventListener('click', () => {
+    let c;
+    mutate((p) => { c = newCustomSpell(p); p.customSpells.push(c); });
+    ui.sel.custom = new Set([c.uid]);
+    render();
+    $('#inspector [data-fid="cs-name"]')?.select();
+  });
+  const bar = document.createElement('div');
+  bar.className = 'bulkbar';
+  main.appendChild(bar);
+  const q = F.q.toLowerCase();
+  const dupIds = new Set();
+  const seen = new Set();
+  project.customSpells.forEach((c) => { const id = sanitizeSpellId(c.id); if (seen.has(id) || SPELLS.has(id)) dupIds.add(id); seen.add(id); });
+  const rows = project.customSpells.filter((c) => !q || (c.name || '').toLowerCase().includes(q) || (c.id || '').toLowerCase().includes(q));
+  const numc = (k, label) => ({ key: k, label, num: true, editable: true, get: (c) => c[k], fmt: fmtNum, field: k });
+  main.appendChild(grid({
+    name: 'custom', rows, key: (c) => c.uid, draggable: true, dragIds: (cs) => cs.map((c) => sanitizeSpellId(c.id)),
+    cols: [
+      { key: 'name', label: 'Name', get: (c) => c.name },
+      { key: 'id', label: 'ID', get: (c) => sanitizeSpellId(c.id), html: (c) => `${esc(sanitizeSpellId(c.id))}${dupIds.has(sanitizeSpellId(c.id)) ? ' <span style="color:var(--danger)" title="ID clashes with another spell">⚠</span>' : ''}`, dim: true },
+      { key: 'type', label: 'Type', get: (c) => typeByCode(Number(c.type)).label, html: (c) => { const t = typeByCode(Number(c.type)); return `<span class="typetag"><i style="background:${t.color}"></i>${t.label}</span>`; } },
+      numc('mana', 'Mana'), numc('max_uses', 'Uses'), numc('fire_rate_wait', 'Cast delay'), numc('damage_add', '+Dmg'), numc('projCount', 'Count'),
+      { key: 'projBase', label: 'Projectile', get: (c) => (c.projBase || '').split('/').pop(), dim: true },
+      { key: 'spawn', label: 'Spawn by tier', get: (c) => Object.values(c.spawn || {}).reduce((a, b) => a + b, 0), html: (c) => sparkHtml(c.spawn || {}) },
+    ],
+    onEdit: (c, targets, str) => {
+      const vals = targets.map((t) => parseNumInput(str, t[c.field]));
+      if (vals.some(Number.isNaN)) { toast('Not a number', true); return render(); }
+      mutate((p) => targets.forEach((t, i) => { const x = p.customSpells.find((y) => y.uid === t.uid); if (x) x[c.field] = vals[i]; }));
+    },
+    onDelete: deleteCustom,
+    onDuplicate: duplicateCustom,
+    onCopy: (cs) => { ui.clipboard = { kind: 'custom', edits: clone(cs[0]) }; toast('Copied — Ctrl+V pastes stats onto selected custom spells'); },
+    onPaste: (cs) => {
+      if (ui.clipboard?.kind !== 'custom') return toast('Copy a custom spell first', true);
+      const src = ui.clipboard.edits;
+      mutate((p) => cs.forEach((c) => { const x = p.customSpells.find((y) => y.uid === c.uid); Object.assign(x, clone(src), { uid: x.uid, id: x.id, name: x.name }); }));
+    },
+    context: (e, cs) => ctxMenu(e, [
+      ['Duplicate', () => duplicateCustom(cs), 'Ctrl+D'],
+      ['Add to starting loadout', () => mutate((p) => { p.loadout.spells = [...(p.loadout.spells || []), ...cs.map((c) => sanitizeSpellId(c.id))]; })],
+      ['Add to new wand', () => mutate((p) => { const w = newWand(p); w.spells = cs.map((c) => sanitizeSpellId(c.id)); p.customWands.push(w); })],
+      null,
+      ['Delete', () => deleteCustom(cs), 'Del'],
+    ]),
+    empty: 'No custom spells yet. Click “+ New spell”, or select vanilla spells and choose “Clone as custom” (or drag them onto “Custom spells”).',
+  }));
+  renderBulkbar(bar, 'custom');
+  inspectCustom(insp);
+}
+function inspectCustom(insp) {
+  const items = selectedCustom();
+  if (!items.length) {
+    insp.innerHTML = '<div class="empty"><p><b>Select a custom spell to edit it.</b></p><p>Select several to edit shared fields at once.</p></div>';
+    return;
+  }
+  inspHead(insp, items.length === 1 ? items[0].name : `${items.length} custom spells`, items.length === 1 ? sanitizeSpellId(items[0].id) : '');
+  const setter = (k) => (p, it, v) => { const x = p.customSpells.find((y) => y.uid === it.uid); if (x) x[k] = v; };
+  let group = '';
+  for (const f of CUSTOM_FIELDS) {
+    if (items.length > 1 && f.k === 'id') continue;
+    if (f.group !== group) { group = f.group; insp.appendChild(groupTitle(group)); }
+    insp.appendChild(fieldRow({
+      label: f.label, items, kind: f.kind || 'num', options: f.options, numeric: f.numeric, list: f.list, hint: f.hint, step: f.step, int: f.int, min: f.min,
+      fid: 'cs-' + f.k, get: (c) => c[f.k], set: setter(f.k),
+    }));
+  }
+  insp.appendChild(groupTitle('Projectile overrides'));
+  insp.insertAdjacentHTML('beforeend', '<div class="note">Leave empty to keep the projectile file\'s own values. Set any of these and a new projectile file based on the one above is generated.</div>');
+  for (const pf of PROJ_FIELDS) {
+    insp.appendChild(fieldRow({
+      label: pf.label, items, kind: 'num', fid: 'csp-' + pf.key,
+      get: (c) => c.proj?.[pf.key], isMod: (c) => has(c.proj?.[pf.key]),
+      set: (p, it, v) => { const x = p.customSpells.find((y) => y.uid === it.uid); x.proj ||= {}; if (has(v)) x.proj[pf.key] = v; else delete x.proj[pf.key]; },
+    }));
+  }
+  insp.appendChild(groupTitle('Icon'));
+  const c0 = items[0];
+  const sb = document.createElement('div');
+  sb.className = 'spritebox';
+  sb.innerHTML = `${c0.spriteData ? `<img src="${c0.spriteData}" alt="icon">` : '<img alt="">'}<button class="small" id="sprite-up">Upload PNG (16×16)…</button>${c0.spriteData ? '<button class="small danger" id="sprite-rm">Remove</button>' : ''}`;
+  insp.appendChild(sb);
+  insp.appendChild(fieldRow({ label: 'Or use game icon path', kind: 'text', items, fid: 'cs-sprite', get: (c) => c.sprite, set: setter('sprite') }));
+  $('#sprite-up', sb).addEventListener('click', () => { pendingSprite = items.map((c) => c.uid); $('#file-sprite').click(); });
+  $('#sprite-rm', sb)?.addEventListener('click', () => mutate((p) => items.forEach((it) => { p.customSpells.find((y) => y.uid === it.uid).spriteData = ''; })));
+  insp.appendChild(groupTitle('Spawning'));
+  insp.appendChild(spawnEditor(items, (c) => c.spawn || {}, (p, it, sp) => { p.customSpells.find((y) => y.uid === it.uid).spawn = sp; }));
+  insp.appendChild(groupTitle('Advanced'));
+  insp.appendChild(fieldRow({
+    label: 'Extra Lua in action()', kind: 'textarea', items, fid: 'cs-lua', get: (c) => c.rawLua, set: setter('rawLua'),
+    hint: 'Runs when the spell is cast. e.g. c.fire_rate_wait = c.fire_rate_wait - 5, add_projectile("…"), draw_actions(1, true)',
+  }));
+  buttons(insp, [['Duplicate', () => duplicateCustom(items)], ['Delete', () => deleteCustom(items), 'danger']]);
+}
+let pendingSprite = null;
+$('#file-sprite').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (f && pendingSprite) await setSpriteFromFile(f, pendingSprite);
+});
+async function setSpriteFromFile(file, uids) {
+  const url = await new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); });
+  mutate((p) => uids.forEach((u) => { const x = p.customSpells.find((y) => y.uid === u); if (x) x.spriteData = url; }));
+  toast('Icon set');
+}
+
+// ───────────────────────── Enemies ─────────────────────────
+const eEdit = (file) => project.enemyEdits[file] || {};
+const enemyGet = (en, f) => eEdit(en.file)[f.key] ?? en.attrs?.[f.key];
+const selectedEnemies = () => catalog.enemies.filter((en) => ui.sel.enemies.has(en.file));
+function enemySet(p, en, f, v) {
+  const e = (p.enemyEdits[en.file] ||= {});
+  if (!has(v) || v === en.attrs?.[f.key]) delete e[f.key]; else e[f.key] = v;
+}
+function viewEnemies(main, insp) {
+  const F = ui.filter.enemies;
+  const biomes = [...new Set(catalog.enemies.map((e) => e.biome).filter(Boolean))].sort();
+  const head = viewHead(main, 'Enemies', `<input type="search" class="search" placeholder="Search name or file…" data-fid="enemies-q" value="${esc(F.q)}">
+    ${biomes.length ? `<select data-biome><option value="">All areas</option>${biomes.map((b) => `<option ${F.biome === b ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select>` : ''}
+    <label class="chip ${F.modified ? 'on' : ''}"><input type="checkbox" ${F.modified ? 'checked' : ''} data-mod hidden>Modified only</label>
+    <span class="spacer"></span><button class="small" id="add-enemy">+ Add entity file…</button>`);
+  $('input[type=search]', head).addEventListener('input', (e) => { F.q = e.target.value; render(); });
+  $('[data-biome]', head)?.addEventListener('change', (e) => { F.biome = e.target.value; render(); });
+  $('[data-mod]', head).addEventListener('change', (e) => { F.modified = e.target.checked; render(); });
+  $('#add-enemy', head).addEventListener('click', () => {
+    modal(`<h2>Add an entity file</h2><p class="muted">Any entity XML path from the game data, e.g. <code>data/entities/animals/rat.xml</code>.</p><input id="ef" style="width:100%" placeholder="data/entities/animals/…xml"><div class="actions"><button data-close>Cancel</button><button class="primary" id="eok">Add</button></div>`);
+    $('#ef').focus();
+    const ok = () => {
+      const file = $('#ef').value.trim();
+      if (!/\.xml$/.test(file)) return toast('Path must end in .xml', true);
+      if (!catalog.enemies.some((e) => e.file === file)) { catalog.enemies.push({ file, name: file.split('/').pop().replace('.xml', ''), biome: 'Custom', attrs: {} }); lsSet(LS_CATALOG, catalog); }
+      closeModal(); ui.sel.enemies = new Set([file]); render();
+    };
+    $('#eok').addEventListener('click', ok);
+    $('#ef').addEventListener('keydown', (e) => e.key === 'Enter' && ok());
+  });
+  const bar = document.createElement('div');
+  bar.className = 'bulkbar';
+  main.appendChild(bar);
+  const q = F.q.toLowerCase();
+  const rows = catalog.enemies.filter((en) => (!F.biome || en.biome === F.biome) && (!F.modified || project.enemyEdits[en.file])
+    && (!q || en.name.toLowerCase().includes(q) || en.file.toLowerCase().includes(q)));
+  const fcol = (key, label) => {
+    const f = ENEMY_FIELDS.find((x) => x.key === key);
+    return { key, label, num: f.kind === 'num', editable: f.kind !== 'bool', get: (en) => enemyGet(en, f), isMod: (en) => has(eEdit(en.file)[key]), fmt: (v) => (f.kind === 'num' ? fmtNum(v) : v ?? ''), field: f };
+  };
+  main.appendChild(grid({
+    name: 'enemies', rows, key: (en) => en.file,
+    cols: [
+      { key: 'name', label: 'Name', get: (en) => en.name, html: (en) => `${project.enemyEdits[en.file] ? '<span class="moddot">● </span>' : ''}${esc(en.name)}` },
+      { key: 'file', label: 'File', get: (en) => en.file.replace('data/entities/animals/', ''), dim: true },
+      { key: 'biome', label: 'Area', get: (en) => en.biome || '', dim: true },
+      fcol('hp', 'HP'), fcol('herd_id', 'Faction'), fcol('run_velocity', 'Run speed'), fcol('melee_max', 'Melee dmg'), fcol('detect_x', 'Detect range'),
+    ],
+    onEdit: (c, targets, str) => {
+      const f = c.field;
+      if (f.kind === 'text') return mutate((p) => targets.forEach((en) => enemySet(p, en, f, str.trim() || undefined)));
+      if (str.trim() === '') return mutate((p) => targets.forEach((en) => enemySet(p, en, f, undefined)));
+      const vals = targets.map((en) => parseNumInput(str, enemyGet(en, f) ?? 0));
+      if (vals.some(Number.isNaN)) { toast('Not a number', true); return render(); }
+      if (str.match(/^[*x×/%]|%$|[+-]=/) && targets.some((en) => !has(enemyGet(en, f)))) toast('Some vanilla values are unknown — import game data for relative edits, or use Global tweaks → enemy HP ×.', true);
+      mutate((p) => targets.forEach((en, i) => enemySet(p, en, f, Math.round(vals[i] * 1000) / 1000)));
+    },
+    onDelete: (rs) => mutate((p) => rs.forEach((en) => delete p.enemyEdits[en.file])),
+    onCopy: (rs) => copyEdits('enemy', project.enemyEdits[rs[0].file]),
+    onPaste: (rs) => pasteEdits('enemy', rs, (p, en, e) => { p.enemyEdits[en.file] = clone(e); }),
+    context: (e, rs) => ctxMenu(e, [
+      ['Multiply HP…', () => enemyMultiplyDialog(rs)],
+      ['Make friendly (player faction)', () => mutate((p) => rs.forEach((en) => { (p.enemyEdits[en.file] ||= {}).herd_id = 'player'; }))],
+      null,
+      ['Copy edits', () => copyEdits('enemy', project.enemyEdits[rs[0].file]), 'Ctrl+C'],
+      ['Paste edits', () => pasteEdits('enemy', rs, (p, en, ed) => { p.enemyEdits[en.file] = clone(ed); }), 'Ctrl+V'],
+      null,
+      ['Reset to vanilla', () => mutate((p) => rs.forEach((en) => delete p.enemyEdits[en.file])), 'Del'],
+    ]),
+  }));
+  renderBulkbar(bar, 'enemies');
+  inspectEnemies(insp);
+}
+function inspectEnemies(insp) {
+  const items = selectedEnemies();
+  if (!items.length) {
+    insp.innerHTML = `<div class="empty"><p><b>Select enemies to edit them.</b></p><p>Change health, resistances, faction, speed, attacks — or any XML attribute with custom rows.</p>${catalog.source !== 'imported' ? '<p class="note warn">Vanilla values are unknown until you import game data. Your edits still work; they replace the game\'s values.</p>' : ''}</div>`;
+    return;
+  }
+  inspHead(insp, items.length === 1 ? items[0].name : `${items.length} creatures`, items.length === 1 ? items[0].file : '');
+  let group = '';
+  for (const f of ENEMY_FIELDS) {
+    if (f.group !== group) { group = f.group; insp.appendChild(groupTitle(group)); }
+    insp.appendChild(fieldRow({
+      label: f.label, items, kind: f.kind, list: f.list, fid: 'en-' + f.key,
+      get: (en) => enemyGet(en, f), base: (en) => en.attrs?.[f.key], isMod: (en) => has(eEdit(en.file)[f.key]),
+      set: (p, en, v) => enemySet(p, en, f, v),
+    }));
+  }
+  insp.appendChild(groupTitle('Custom XML attributes'));
+  insp.insertAdjacentHTML('beforeend', '<div class="note">Set any attribute on any component, e.g. <code>DamageModelComponent</code> · <code>falling_damages</code> · <code>0</code>. Applied to every selected creature.</div>');
+  const rowsByKey = new Map();
+  items.forEach((en) => (eEdit(en.file).custom || []).forEach((c, i) => {
+    const k = `${c.tag}|${c.attr}`;
+    if (!rowsByKey.has(k)) rowsByKey.set(k, { tag: c.tag, attr: c.attr, value: c.value, n: 0, i });
+    rowsByKey.get(k).n++;
+  }));
+  const tbl = document.createElement('div');
+  for (const r of [...rowsByKey.values(), { tag: '', attr: '', value: '', n: 0, isNew: true }]) {
+    const d = document.createElement('div');
+    d.className = 'row';
+    d.style.marginBottom = '4px';
+    d.innerHTML = `<input placeholder="Component / tag" value="${esc(r.tag)}" style="width:42%" list="dl-components"><input placeholder="attribute" value="${esc(r.attr)}" style="width:30%"><input placeholder="value" value="${esc(r.value)}" style="width:16%">${r.isNew ? '' : '<button class="small ghost" title="Remove">×</button>'}`;
+    const [ti, ai, vi] = $$('input', d);
+    const save = () => {
+      const tag = ti.value.trim();
+      const attr = ai.value.trim();
+      if (r.isNew && (!tag || !attr)) return;
+      mutate((p) => items.forEach((en) => {
+        const e = (p.enemyEdits[en.file] ||= {});
+        e.custom = (e.custom || []).filter((c) => !(c.tag === r.tag && c.attr === r.attr));
+        if (tag && attr) e.custom.push({ tag, attr, value: vi.value });
+      }));
+    };
+    [ti, ai, vi].forEach((x) => x.addEventListener('change', save));
+    $('button', d)?.addEventListener('click', () => mutate((p) => items.forEach((en) => {
+      const e = p.enemyEdits[en.file];
+      if (e?.custom) e.custom = e.custom.filter((c) => !(c.tag === r.tag && c.attr === r.attr));
+    })));
+    tbl.appendChild(d);
+  }
+  insp.appendChild(tbl);
+  buttons(insp, [
+    ['Copy edits', () => copyEdits('enemy', project.enemyEdits[items[0].file])],
+    ['Paste', () => pasteEdits('enemy', items, (p, en, e) => { p.enemyEdits[en.file] = clone(e); })],
+    ['Reset', () => mutate((p) => items.forEach((en) => delete p.enemyEdits[en.file])), 'danger'],
+  ]);
+}
+function enemyMultiplyDialog(ens) {
+  const known = ens.filter((en) => has(en.attrs?.hp) || has(eEdit(en.file).hp));
+  modal(`<h2>Multiply HP of ${ens.length} creature(s)</h2>
+    ${known.length < ens.length ? `<p class="note warn">${ens.length - known.length} creature(s) have unknown vanilla HP (import game data). For those, use Global tweaks → “Enemy HP ×”, which multiplies in-game.</p>` : ''}
+    <div class="row">HP × <input id="mv" value="2" style="width:80px"></div>
+    <div class="actions"><button data-close>Cancel</button><button class="primary" id="mok">Apply</button></div>`);
+  $('#mv').select();
+  const ok = () => {
+    const m = Number($('#mv').value);
+    if (Number.isNaN(m)) return;
+    closeModal();
+    const f = ENEMY_FIELDS[0];
+    mutate((p) => known.forEach((en) => enemySet(p, en, f, Math.round(Number(enemyGet(en, f)) * m * 1000) / 1000)));
+  };
+  $('#mok').addEventListener('click', ok);
+  $('#mv').addEventListener('keydown', (e) => e.key === 'Enter' && ok());
+}
+
+// ───────────────────────── Wands ─────────────────────────
+function newWand(p) {
+  return {
+    uid: uid(), name: `Wand ${p.customWands.length + 1}`, spawnAtStart: true, mana_max: 600, mana_charge_speed: 250, deck_capacity: 10,
+    actions_per_round: 1, reload_time: 20, fire_rate_wait: 8, spread_degrees: 0, speed_multiplier: 1, shuffle: false, spells: [], always: [],
+  };
+}
+function viewWands(main, insp) {
+  const head = viewHead(main, 'Wands', `<div class="chips"><span class="chip ${ui.wandTab === 'custom' ? 'on' : ''}" data-tab="custom">Custom wands</span><span class="chip ${ui.wandTab === 'gen' ? 'on' : ''}" data-tab="gen">Random wand generation</span></div><span class="spacer"></span>${ui.wandTab === 'custom' ? '<button class="primary small" id="new-wand">+ New wand</button>' : ''}`);
+  head.addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) { ui.wandTab = t.dataset.tab; render(); } });
+  $('#new-wand', head)?.addEventListener('click', () => mutate((p) => p.customWands.push(newWand(p))));
+  const body = document.createElement('div');
+  body.className = 'view-body pad';
+  main.appendChild(body);
+  strips.clear();
+  if (ui.wandTab === 'gen') return wandGen(body, insp);
+  if (!project.customWands.length) body.innerHTML = '<div class="muted">No custom wands yet. Click “+ New wand”, or drag spells from the Spells list onto “Wands” in the sidebar.</div>';
+  const cards = document.createElement('div');
+  cards.className = 'cards';
+  project.customWands.forEach((w, wi) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const stat = (s) => `<label title="${esc(s.label)}">${esc(s.label)}<input data-k="${s.key}" data-fid="w${wi}-${s.key}" value="${fmtNum(w[s.key])}"></label>`;
+    card.innerHTML = `<div class="card-head"><input class="title" data-k="name" data-fid="w${wi}-name" value="${esc(w.name)}"><button class="small ghost" data-act="dup" title="Duplicate">⧉</button><button class="small ghost danger" data-act="del" title="Delete">🗑</button></div>
+      <div class="statgrid">${WAND_STATS.map(stat).join('')}<label>Shuffle<input type="checkbox" data-k="shuffle" ${w.shuffle ? 'checked' : ''}></label><label title="Spawn this wand next to the player at the start of a run">Give at start<input type="checkbox" data-k="spawnAtStart" ${w.spawnAtStart ? 'checked' : ''}></label></div>
+      <div class="group-title">Spells (${(w.spells || []).length}/${w.deck_capacity})</div><div data-s="spells"></div>
+      <div class="group-title">Always cast</div><div data-s="always"></div>`;
+    $('[data-s=spells]', card).replaceWith(stripEl(`w-${w.uid}-spells`, w.spells || [], (ids) => { const x = project.customWands.find((y) => y.uid === w.uid); if (x) x.spells = ids; }, { placeholder: 'Drag spells here (from the palette or the Spells list)' }));
+    $('[data-s=always]', card).replaceWith(stripEl(`w-${w.uid}-always`, w.always || [], (ids) => { const x = project.customWands.find((y) => y.uid === w.uid); if (x) x.always = ids; }, { placeholder: 'Drag always-cast spells here' }));
+    card.addEventListener('change', (e) => {
+      const k = e.target.dataset.k;
+      if (!k) return;
+      let v;
+      if (e.target.type === 'checkbox') v = e.target.checked;
+      else if (k === 'name') v = e.target.value;
+      else { v = parseNumInput(e.target.value, w[k]); if (Number.isNaN(v)) { toast('Not a number', true); return render(); } }
+      mutate((p) => { p.customWands[wi][k] = v; });
+    });
+    card.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-act]')?.dataset.act;
+      if (a === 'del') { mutate((p) => p.customWands.splice(wi, 1)); toast('Wand deleted', false, undo); }
+      if (a === 'dup') mutate((p) => p.customWands.splice(wi + 1, 0, { ...clone(w), uid: uid(), name: w.name + ' copy' }));
+    });
+    cards.appendChild(card);
+  });
+  body.appendChild(cards);
+  if (project.customWands.length) body.insertAdjacentHTML('beforeend', '<div class="note mt">Wands marked “Give at start” appear next to the player when a new run begins. Select chips with click / Ctrl+click / Shift+click, drag to reorder or move between wands (hold Alt to copy), press Delete to remove, or drag them back to the palette.</div>');
+  insp.appendChild(paletteEl('Spell palette', 'Drag spells into wand slots. Ctrl+click to pick several. Double-click adds to the last-clicked wand.'));
+}
+function wandGen(body, insp) {
+  const T = project.wandGen.tiers || {};
+  const tier = ui.wandTier;
+  const r = T[tier] || {};
+  const tierLabel = (t) => (t === 'all' ? 'All wands' : `Tier ${t}`);
+  body.innerHTML = `<p class="muted" style="margin-top:0">Rules run after the game generates a random wand (shops, chests, world). “All wands” applies first, then the tier rule. Tier ≈ depth (1 Mines … 6 Temple of the art; 10 = late game).</p>
+    <div class="tierTabs">${WAND_TIERS.map((t) => `<span class="chip ${tier === t ? 'on' : ''}" data-tier="${t}">${tierLabel(t)}${T[t] && Object.keys(T[t]).length ? ' ●' : ''}</span>`).join('')}</div>
+    <table class="rules"><thead><tr><th>Stat</th><th>× Multiply</th><th>+ Add</th><th>Min</th><th>Max</th><th></th></tr></thead><tbody>
+    ${WAND_STATS.map((s) => `<tr data-s="${s.key}"><td>${esc(s.label)}</td>${['mult', 'add', 'min', 'max'].map((k) => `<td><input data-k="${k}" data-fid="wg-${tier}-${s.key}-${k}" value="${fmtNum(r[s.key]?.[k])}" placeholder="${k === 'mult' ? '1' : k === 'add' ? '0' : '—'}"></td>`).join('')}<td>${r[s.key] ? '<button class="small ghost" data-clear title="Clear">↺</button>' : ''}</td></tr>`).join('')}
+    <tr><td>Shuffle</td><td colspan="4"><select data-shuffle><option value="keep">Keep game's choice</option><option value="never" ${r.shuffle === 'never' ? 'selected' : ''}>Never shuffle</option><option value="always" ${r.shuffle === 'always' ? 'selected' : ''}>Always shuffle</option></select></td><td></td></tr>
+    </tbody></table>
+    <div class="row mt"><button class="small" data-preset="strong">Preset: stronger wands</button><button class="small" data-preset="noshuffle">Preset: no shuffle anywhere</button><button class="small" data-preset="fast">Preset: fast casting</button><button class="small danger" data-preset="clear">Clear ${esc(tierLabel(tier))}</button></div>`;
+  body.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-tier]');
+    if (t) { ui.wandTier = t.dataset.tier; render(); return; }
+    const c = e.target.closest('[data-clear]');
+    if (c) { const s = c.closest('tr').dataset.s; mutate((p) => { delete p.wandGen.tiers[tier]?.[s]; }); return; }
+    const pr = e.target.closest('[data-preset]')?.dataset.preset;
+    if (!pr) return;
+    mutate((p) => {
+      const tt = (p.wandGen.tiers ||= {});
+      if (pr === 'clear') delete tt[tier];
+      if (pr === 'strong') tt.all = { ...(tt.all || {}), mana_max: { mult: 1.5 }, mana_charge_speed: { mult: 1.5 }, deck_capacity: { add: 2, max: 26 } };
+      if (pr === 'noshuffle') tt.all = { ...(tt.all || {}), shuffle: 'never' };
+      if (pr === 'fast') tt.all = { ...(tt.all || {}), fire_rate_wait: { mult: 0.5 }, reload_time: { mult: 0.5 } };
+    });
+    toast('Preset applied to "All wands"');
+  });
+  body.addEventListener('change', (e) => {
+    if (e.target.matches('[data-shuffle]')) return mutate((p) => { ((p.wandGen.tiers ||= {})[tier] ||= {}).shuffle = e.target.value === 'keep' ? undefined : e.target.value; cleanTier(p, tier); });
+    const k = e.target.dataset.k;
+    const s = e.target.closest('tr')?.dataset.s;
+    if (!k || !s) return;
+    const v = e.target.value.trim() === '' ? undefined : Number(e.target.value);
+    if (Number.isNaN(v)) { toast('Not a number', true); return render(); }
+    mutate((p) => {
+      const tr = ((p.wandGen.tiers ||= {})[tier] ||= {});
+      const st = (tr[s] ||= {});
+      if (v === undefined) delete st[k]; else st[k] = v;
+      cleanTier(p, tier);
+    });
+  });
+  insp.innerHTML = `<h3>How generation rules work</h3><div class="sub">Applies to every randomly generated wand.</div>
+    <div class="note"><b>× Multiply</b> scales the generated value, <b>+ Add</b> shifts it, then it is clamped to <b>Min/Max</b>.<br><br>Example: capacity × 1, + 2, max 26 → every wand gets two more slots (capped at 26).<br><br>Cast delay and recharge are in frames (60 = 1 second); lower is faster.</div>
+    <div class="note">Want a specific wand instead? Use the <b>Custom wands</b> tab.</div>`;
+}
+function cleanTier(p, tier) {
+  const tr = p.wandGen.tiers[tier];
+  if (!tr) return;
+  for (const k of Object.keys(tr)) {
+    if (tr[k] === undefined || (typeof tr[k] === 'object' && !Object.keys(tr[k]).length)) delete tr[k];
+  }
+  if (!Object.keys(tr).length) delete p.wandGen.tiers[tier];
+}
+
+// ───────────────────────── Loadout ─────────────────────────
+function viewLoadout(main, insp) {
+  viewHead(main, 'Starting loadout');
+  const body = document.createElement('div');
+  body.className = 'view-body pad';
+  main.appendChild(body);
+  strips.clear();
+  const lo = project.loadout;
+  const form = document.createElement('div');
+  form.className = 'form';
+  const set = (k) => (p, _it, v) => { p.loadout[k] = v; };
+  form.appendChild(groupTitle('Player'));
+  form.appendChild(fieldRow({ label: 'Starting health (hp)', items: [lo], kind: 'num', fid: 'lo-hp', get: () => lo.hp, isMod: () => has(lo.hp), set: set('hp'), hint: 'Vanilla is 100.', min: 1 }));
+  form.appendChild(fieldRow({ label: 'Starting gold', items: [lo], kind: 'num', fid: 'lo-gold', get: () => lo.gold, isMod: () => has(lo.gold), set: set('gold'), int: true, min: 0 }));
+  form.appendChild(fieldRow({ label: 'Remove the default starting wands', items: [lo], kind: 'bool', fid: 'lo-rm', get: () => !!lo.removeStartingWands, isMod: () => !!lo.removeStartingWands, set: set('removeStartingWands') }));
+  form.appendChild(groupTitle('Starting spells (dropped at your feet)'));
+  form.appendChild(stripEl('loadout-spells', lo.spells || [], (ids) => { project.loadout.spells = ids; }, { placeholder: 'Drag spells here from the palette, or drag selected spells onto “Starting loadout” in the sidebar' }));
+  form.appendChild(groupTitle('Starting wands'));
+  if (!project.customWands.length) form.insertAdjacentHTML('beforeend', '<div class="muted">No custom wands yet — create one in Wands.</div>');
+  project.customWands.forEach((w, i) => {
+    form.appendChild(fieldRow({
+      label: `${w.name} (${(w.spells || []).length} spells)`, items: [w], kind: 'bool', fid: 'lo-w' + i,
+      get: () => !!w.spawnAtStart, set: (p, _it, v) => { p.customWands[i].spawnAtStart = v; },
+    }));
+  });
+  buttons(form, [['Open wand editor', () => { ui.view = 'wands'; ui.wandTab = 'custom'; render(); }]]);
+  body.appendChild(form);
+  insp.appendChild(paletteEl('Spell palette', 'Drag spells into the starting spells area. Double-click to add.'));
+  ui.activeStrip ||= 'loadout-spells';
+}
+
+// ───────────────────────── Global tweaks ─────────────────────────
+function viewGlobals(main) {
+  viewHead(main, 'Global tweaks');
+  const body = document.createElement('div');
+  body.className = 'view-body pad';
+  main.appendChild(body);
+  const g = project.globals;
+  const form = document.createElement('div');
+  form.className = 'form';
+  const set = (k) => (p, _it, v) => { p.globals[k] = v; };
+  const row = (label, k, hint, kind = 'num') => fieldRow({ label, items: [g], kind, fid: 'g-' + k, get: () => g[k], base: () => (kind === 'bool' ? false : 1), isMod: () => has(g[k]) && g[k] !== 1 && g[k] !== false, set: set(k), hint, step: 0.05 });
+  form.appendChild(groupTitle('Spells'));
+  form.appendChild(row('Mana cost ×', 'manaMult', 'Multiplies every spell\'s mana cost (before per-spell edits).'));
+  form.appendChild(row('Shop price ×', 'priceMult'));
+  form.appendChild(row('Unlimited uses for every spell', 'unlimitedUses', '', 'bool'));
+  form.appendChild(groupTitle('Spawn chance × by spell type'));
+  for (const t of SPELL_TYPES) {
+    form.appendChild(fieldRow({
+      label: t.label, items: [g], kind: 'num', fid: 'g-sp-' + t.code, step: 0.05, base: () => 1,
+      get: () => g.spawnMultByType?.[t.code], isMod: () => has(g.spawnMultByType?.[t.code]) && g.spawnMultByType[t.code] !== 1,
+      set: (p, _it, v) => { p.globals.spawnMultByType ||= {}; if (has(v)) p.globals.spawnMultByType[t.code] = v; else delete p.globals.spawnMultByType[t.code]; },
+    }));
+  }
+  form.appendChild(groupTitle('Enemies'));
+  form.appendChild(row('Enemy HP ×', 'enemyHpMult', 'Multiplies the health of every creature in the list, unless you set its HP explicitly.'));
+  body.appendChild(form);
+  $('#inspector').innerHTML = '<h3>Global tweaks</h3><div class="sub">Quick, game-wide knobs.</div><div class="note">These multiply the game\'s own values inside Noita, so they work even without imported game data. Per-spell and per-enemy edits take priority.</div>';
+}
+
+// ───────────────────────── Export ─────────────────────────
+function viewExport(main, insp) {
+  viewHead(main, 'Export mod', '<span class="spacer"></span><button class="primary" id="dl">⬇ Download .zip</button>');
+  $('#dl').addEventListener('click', exportZip);
+  const { files, warnings, modId } = generateMod(project, catalog);
+  const body = document.createElement('div');
+  body.className = 'view-body pad';
+  main.appendChild(body);
+  const names = Object.keys(files);
+  if (!names.includes(ui.exportFile)) ui.exportFile = `${modId}/init.lua`;
+  const content = files[ui.exportFile];
+  body.innerHTML = `${warnings.map((w) => `<div class="note warn">${esc(w)}</div>`).join('')}
+    <div class="filetree"><div class="files">${names.map((n) => `<div class="${n === ui.exportFile ? 'on' : ''}" data-f="${esc(n)}">${esc(n)}</div>`).join('')}</div>
+    <pre>${typeof content === 'string' ? esc(content) : `(binary file, ${content?.length || 0} bytes)`}</pre></div>`;
+  body.addEventListener('click', (e) => { const f = e.target.closest('[data-f]'); if (f) { ui.exportFile = f.dataset.f; render(); } });
+  const meta = project.meta;
+  insp.appendChild(groupTitle('Mod info'));
+  const m = (k, label, hint) => fieldRow({ label, items: [meta], kind: 'text', fid: 'meta-' + k, get: () => meta[k], set: (p, _i, v) => { p.meta[k] = v; }, hint });
+  insp.appendChild(m('name', 'Name'));
+  insp.appendChild(m('id', 'Folder ID', `Folder name inside Noita/mods. Current: ${modId}`));
+  insp.appendChild(m('description', 'Description'));
+  insp.insertAdjacentHTML('beforeend', `<div class="group-title">Install</div>
+    <ol style="padding-left:18px;margin:0">
+      <li>Click <b>Download .zip</b>.</li>
+      <li>Extract it into your Noita <code>mods</code> folder<br><span class="muted">(Steam: right-click Noita → Manage → Browse local files)</span> so you have <code>mods/${esc(modId)}/init.lua</code>.</li>
+      <li>Start Noita → <b>Mods</b> → enable <b>${esc(meta.name || modId)}</b>.</li>
+      <li>Start a <b>new game</b> (spell, wand & enemy changes need a fresh world).</li>
+    </ol>
+    <div class="note">The generated Lua is plain and commented — open it in any editor to tweak further.</div>`);
+}
+function exportZip() {
+  const { files, modId, warnings } = generateMod(project, catalog);
+  const zip = makeZip(files);
+  download(new Blob([zip], { type: 'application/zip' }), `${modId}.zip`);
+  toast(`Exported ${modId}.zip${warnings.length ? ` (${warnings.length} warning${warnings.length > 1 ? 's' : ''} — see Export tab)` : ''}`);
+}
+function download(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+// ───────────────────────── Import game data ─────────────────────────
+function importDialog() {
+  modal(`<h2>Import game data</h2>
+    <p>Load the real spell & enemy stats from your own copy of Noita so every vanilla value shown is exact.</p>
+    <ol>
+      <li>Unpack the game's data: run <code>noita_dev.exe</code> from the Noita install folder and use its <b>unpack data</b> option, or use any <code>data.wak</code> extractor.</li>
+      <li>Choose (or drag in) the resulting <code>data</code> folder. Only these are read: <code>scripts/gun/gun_actions.lua</code>, <code>translations/common.csv</code>, <code>entities/animals/**</code>, <code>entities/projectiles/**</code>.</li>
+    </ol>
+    <p class="muted">Nothing is uploaded — files are read locally in your browser.</p>
+    <div class="actions"><button data-close>Cancel</button><button id="imp-files">Choose files…</button><button class="primary" id="imp-dir">Choose data folder…</button></div>`);
+  $('#imp-dir').addEventListener('click', () => $('#dir-import').click());
+  $('#imp-files').addEventListener('click', () => $('#file-import').click());
+}
+$('#dir-import').addEventListener('change', (e) => { importFiles([...e.target.files].map((f) => ({ path: f.webkitRelativePath || f.name, file: f }))); e.target.value = ''; });
+$('#file-import').addEventListener('change', (e) => { importFiles([...e.target.files].map((f) => ({ path: f.name, file: f }))); e.target.value = ''; });
+
+const normPath = (p) => {
+  const s = p.replace(/\\/g, '/');
+  const i = s.lastIndexOf('data/');
+  return i >= 0 ? s.slice(i) : s;
+};
+async function importFiles(list) {
+  closeModal();
+  const entries = list.map((x) => ({ ...x, norm: normPath(x.path) }));
+  const find = (re) => entries.find((x) => re.test(x.norm) || re.test(x.path));
+  const gun = find(/gun_actions\.lua$/);
+  const trF = find(/translations\/common\.csv$/) || find(/common\.csv$/);
+  const animals = entries.filter((x) => /entities\/animals\/.*\.xml$/.test(x.norm));
+  const projs = entries.filter((x) => /entities\/projectiles\/.*\.xml$/.test(x.norm));
+  if (!gun && !animals.length && !projs.length) return toast('No game data found. Pick the unpacked “data” folder (or gun_actions.lua).', true);
+  toast('Reading game data…');
+  const translations = trF ? parseTranslations(await trF.file.text()) : {};
+  const next = clone(catalog);
+  next.source = 'imported';
+  let nSpells = 0;
+  if (gun) {
+    const spells = parseGunActions(await gun.file.text(), translations);
+    if (spells.length) { next.spells = spells; nSpells = spells.length; }
+  }
+  if (projs.length) {
+    const byPath = new Map(projs.map((x) => [x.norm, x]));
+    next.projectiles = projs.map((x) => x.norm).sort();
+    await Promise.all(next.spells.map(async (s) => {
+      const x = s.projectile && byPath.get(s.projectile);
+      if (x) s.proj = parseProjectileXml(await x.file.text());
+    }));
+  }
+  if (animals.length) {
+    const biomeByFile = new Map(BUILTIN_ENEMIES.map((e) => [e.file, e.biome]));
+    const parsed = await Promise.all(animals.map(async (x) => parseEnemyXml(await x.file.text(), x.norm, translations)));
+    next.enemies = parsed.filter((e) => e.isEnemy).map(({ isEnemy, ...e }) => ({ ...e, biome: biomeByFile.get(e.file) || e.file.split('/').slice(3, -1).join('/') || 'Other' }));
+  }
+  catalog = next;
+  if (!lsSet(LS_CATALOG, catalog)) toast('Imported, but the data is too large to remember after reload.', true);
+  render();
+  toast(`Imported ${nSpells ? nSpells + ' spells' : 'no spells'}, ${animals.length ? next.enemies.length + ' creatures' : 'no creatures'}${projs.length ? ', ' + projs.length + ' projectile files' : ''}.`);
+}
+
+// ───────────────────────── project files ─────────────────────────
+function saveProject() {
+  download(new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' }), `${sanitizeModId(project.meta.id || project.meta.name)}.noitamod.json`);
+}
+async function openProjectFile(file) {
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.meta) throw new Error('not a project');
+    mutate(() => { project = Object.assign(newProject(), data); });
+    toast(`Opened ${file.name}`);
+  } catch { toast('That file is not a Noita Mod Forge project', true); }
+}
+$('#file-open').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) openProjectFile(f); });
+
+// Whole-window file drop: folders → import, .json → open, .png → custom spell icon.
+let dragDepth = 0;
+const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
+window.addEventListener('dragenter', (e) => { if (hasFiles(e)) { dragDepth++; $('#dropveil').hidden = false; } });
+window.addEventListener('dragleave', (e) => { if (hasFiles(e) && --dragDepth <= 0) { dragDepth = 0; $('#dropveil').hidden = true; } });
+window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+window.addEventListener('drop', async (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth = 0;
+  $('#dropveil').hidden = true;
+  const items = [...e.dataTransfer.items].map((i) => i.webkitGetAsEntry?.()).filter(Boolean);
+  const out = [];
+  const walk = async (entry, path) => {
+    if (entry.isFile) {
+      if (/\.(lua|csv|xml|json|png)$/i.test(entry.name)) out.push({ path: path + entry.name, file: await new Promise((res, rej) => entry.file(res, rej)) });
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      let batch;
+      do {
+        batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        for (const child of batch) await walk(child, path + entry.name + '/');
+      } while (batch.length);
+    }
+  };
+  if (items.length) { for (const it of items) await walk(it, ''); } else out.push(...[...e.dataTransfer.files].map((f) => ({ path: f.name, file: f })));
+  const json = out.find((x) => /\.json$/i.test(x.path));
+  const pngs = out.filter((x) => /\.png$/i.test(x.path));
+  if (json && out.length === 1) return openProjectFile(json.file);
+  if (pngs.length === out.length) {
+    if (ui.view === 'custom' && ui.sel.custom.size) return setSpriteFromFile(pngs[0].file, [...ui.sel.custom]);
+    return toast('To set a spell icon, select a custom spell first, then drop the PNG.', true);
+  }
+  importFiles(out);
+});
+
+// ───────────────────────── chrome: menus, modal, toasts, keys ─────────────────────────
+function toast(msg, err = false, undoFn) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' err' : '');
+  t.textContent = msg;
+  if (undoFn) {
+    const b = document.createElement('button');
+    b.className = 'small'; b.textContent = 'Undo';
+    b.addEventListener('click', () => { undoFn(); t.remove(); });
+    t.appendChild(b);
+  }
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), undoFn ? 6000 : 3200);
+}
+function modal(html) {
+  $('#modal-card').innerHTML = html;
+  $('#modal').hidden = false;
+  $$('#modal [data-close]').forEach((b) => b.addEventListener('click', closeModal));
+}
+function closeModal() { $('#modal').hidden = true; }
+$('#modal').addEventListener('mousedown', (e) => { if (e.target.id === 'modal') closeModal(); });
+function ctxMenu(e, items) {
+  const m = $('#ctxmenu');
+  m.innerHTML = '';
+  for (const it of items) {
+    if (!it) { m.appendChild(document.createElement('hr')); continue; }
+    const b = document.createElement('button');
+    b.innerHTML = `${esc(it[0])}${it[2] ? `<span class="k">${esc(it[2])}</span>` : ''}`;
+    b.addEventListener('click', () => { m.hidden = true; it[1](); });
+    m.appendChild(b);
+  }
+  m.hidden = false;
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.min(e.clientX, innerWidth - r.width - 8) + 'px';
+  m.style.top = Math.min(e.clientY, innerHeight - r.height - 8) + 'px';
+}
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('#ctxmenu')) $('#ctxmenu').hidden = true;
+  if (!e.target.closest('.menu')) $('#project-menu').hidden = true;
+});
+$('#btn-project').addEventListener('click', () => { $('#project-menu').hidden = !$('#project-menu').hidden; });
+document.addEventListener('click', (e) => {
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if (!act || !e.target.closest('#project-menu, #statusbar')) return;
+  e.preventDefault();
+  $('#project-menu').hidden = true;
+  if (act === 'new') {
+    if (!confirm('Start a new, empty project? (You can undo this.)')) return;
+    mutate(() => { project = newProject(); });
+    Object.values(ui.sel).forEach((s) => s.clear());
+  }
+  if (act === 'open') $('#file-open').click();
+  if (act === 'save') saveProject();
+  if (act === 'import') importDialog();
+  if (act === 'reset-catalog') { catalog = builtinCatalog(); lsSet(LS_CATALOG, catalog); render(); toast('Using built-in reference data'); }
+  if (act === 'help') helpDialog();
+});
+$('#btn-undo').addEventListener('click', undo);
+$('#btn-redo').addEventListener('click', redo);
+$('#btn-export').addEventListener('click', exportZip);
+$('#mod-name').addEventListener('change', (e) => mutate((p) => { p.meta.name = e.target.value; }));
+
+function helpDialog() {
+  const rows = [
+    ['Click / Shift+click / Ctrl+click', 'Select, range-select, toggle'],
+    ['Drag down a list', 'Paint-select many rows'],
+    ['Drag selected rows', 'Onto Wands, Custom spells or Starting loadout'],
+    ['Ctrl+A · Esc', 'Select all visible · clear selection'],
+    ['↑ ↓ (Shift)', 'Move (extend) selection'],
+    ['Double-click a number cell', 'Edit it for every selected row'],
+    ['Enter', 'Jump to the inspector'],
+    ['Ctrl+C · Ctrl+V', 'Copy edits from a row · paste onto selection'],
+    ['Ctrl+D', 'Clone as custom spell / duplicate'],
+    ['Delete', 'Reset selected rows to vanilla (custom: delete)'],
+    ['Ctrl+Z · Ctrl+Shift+Z', 'Undo · redo'],
+    ['Ctrl+S', 'Export the mod .zip'],
+    ['/', 'Search'],
+    ['Alt+1 … Alt+7', 'Switch sections'],
+    ['In number fields', '12 · *2 · /2 · +=5 · -=5 · 150% · ↑/↓ to step · drag the label to scrub'],
+    ['Wand slots', 'Drag to reorder / move; Alt-drag copies; Delete removes'],
+  ];
+  modal(`<h2>Keyboard & mouse</h2><table class="shortcuts">${rows.map(([k, v]) => `<tr><td><kbd>${esc(k)}</kbd></td><td>${esc(v)}</td></tr>`).join('')}</table><div class="actions"><button class="primary" data-close>Got it</button></div>`);
+}
+
+document.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === 'Escape' && !$('#modal').hidden) { closeModal(); return; }
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); exportZip(); return; }
+  if (isTextTarget(e.target)) return;
+  if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+  if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  if (e.altKey && /^[1-7]$/.test(e.key)) { e.preventDefault(); go(VIEWS[Number(e.key) - 1].id); return; }
+  if (e.key === '/' || (mod && e.key.toLowerCase() === 'f')) { const s = $('#main input[type=search]'); if (s) { e.preventDefault(); s.focus(); s.select(); } return; }
+  if (e.key === '?') { helpDialog(); return; }
+  // Route list shortcuts to the current grid even when it isn't focused.
+  const g = $('#main .view-body[data-grid]');
+  if (g && document.activeElement !== g && !e.target.closest?.('.strip') && ['ArrowUp', 'ArrowDown', 'Delete', 'Escape'].includes(e.key)) {
+    g.focus({ preventScroll: true });
+    g.dispatchEvent(new KeyboardEvent('keydown', e));
+    e.preventDefault();
+  } else if (g && document.activeElement !== g && mod && ['a', 'c', 'v', 'd'].includes(e.key.toLowerCase()) && !e.target.closest?.('.strip')) {
+    e.preventDefault();
+    g.focus({ preventScroll: true });
+    g.dispatchEvent(new KeyboardEvent('keydown', { key: e.key, ctrlKey: true, metaKey: e.metaKey, shiftKey: e.shiftKey }));
+  }
+});
+
+// Datalists for autocomplete.
+function datalists() {
+  const mk = (id, vals) => {
+    let dl = document.getElementById('dl-' + id);
+    if (!dl) { dl = document.createElement('datalist'); dl.id = 'dl-' + id; document.body.appendChild(dl); }
+    dl.innerHTML = vals.map((v) => `<option value="${esc(v)}">`).join('');
+  };
+  mk('projectiles', projectileList());
+  mk('herds', HERDS);
+  mk('materials', MATERIALS);
+  mk('components', ['DamageModelComponent', 'AnimalAIComponent', 'CharacterPlatformingComponent', 'CharacterDataComponent', 'GenomeDataComponent', 'PathFindingComponent', 'SpriteComponent', 'LuaComponent', 'ItemChestComponent', 'damage_multipliers']);
+  mk('extras', ['data/entities/misc/homing.xml', 'data/entities/misc/explosive_projectile.xml', 'data/entities/misc/piercing_shot.xml', 'data/entities/misc/electric_charge.xml', 'data/entities/misc/freeze_charge.xml', 'data/entities/misc/fire_trail.xml', 'data/entities/misc/poison_trail.xml']);
+}
+
+datalists();
+render();
+if (!lsGet('nmf.welcomed')) {
+  lsSet('nmf.welcomed', true);
+  modal(`<h2>Welcome to Noita Mod Forge ✦</h2>
+    <p>Build a Noita mod without writing code:</p>
+    <ul><li><b>Spells</b> — change mana, uses, cast delay, damage, spawn chance… for one or hundreds of spells at once.</li>
+    <li><b>Enemies</b> — health, resistances, faction, speed, attacks, any XML attribute.</li>
+    <li><b>Wands</b> — tune random wand generation or design exact wands by dragging spells into slots.</li>
+    <li><b>Custom spells</b>, <b>starting loadout</b> and <b>global tweaks</b>.</li></ul>
+    <p>When you're done, <b>Export</b> downloads a ready-to-install mod folder.</p>
+    <p class="note">Values shown start from built-in reference data. For exact vanilla numbers, <b>Project → Import game data</b>.</p>
+    <div class="actions"><button data-close>Explore</button><button class="primary" id="w-imp">Import game data</button></div>`);
+  $('#w-imp').addEventListener('click', importDialog);
+}
+
+return { parseNumInput };
+})();
+</script>
+</body>
+</html>
